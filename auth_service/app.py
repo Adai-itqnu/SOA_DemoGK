@@ -1,166 +1,139 @@
-from flask import Flask, request, jsonify, render_template, redirect, url_for
-from pymongo import MongoClient
-import bcrypt
-import jwt
-import datetime
-from consul import Consul
-import config
+from flask import Flask, render_template, request, jsonify, redirect, url_for, session
+from flask_jwt_extended import JWTManager, create_access_token, decode_token
+from datetime import timedelta
+from models.user_model import create_user, find_user, update_token, check_password
+from service_registry import register_service
+from config import *
+import consul
 
 app = Flask(__name__)
+app.secret_key = "auth_secret"
 
-# ---------- MongoDB ----------
-client = MongoClient(config.MONGO_URI)
-db = client.get_database()  # database: library_db
-users_col = db.users        # collection users
+# JWT setup
+app.config["JWT_SECRET_KEY"] = JWT_SECRET
+jwt = JWTManager(app)
 
-# Đăng ký dịch vụ với Consul
-try:
-    consul = Consul(host=config.CONSUL_HOST, port=config.CONSUL_PORT)
-    consul.agent.service.register(
-        name=config.SERVICE_NAME,
-        service_id=config.SERVICE_ID,
-        address=config.SERVICE_ADDRESS,
-        port=config.SERVICE_PORT,
-        check={
-            "http": config.HEALTH_CHECK_URL,
-            "interval": "10s"
-        }
-    )
-    print(f"✅ Đăng ký {config.SERVICE_NAME} thành công tại {config.SERVICE_ADDRESS}:{config.SERVICE_PORT}")
-except Exception as e:
-    print("⚠️ Không kết nối được Consul (app vẫn chạy):", e)
 
-@app.route('/health')
+# ---------------- HEALTH CHECK ----------------
+@app.route("/health")
 def health():
-    return "OK", 200
+    return jsonify({"status": "UP"}), 200
 
-# ---------- Helpers: JWT + decorators ----------
-def create_token(user_doc, expires_hours=1):
-    payload = {
-        'username': user_doc['username'],
-        'role': user_doc.get('role', 'user'),
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=expires_hours)
-    }
-    token = jwt.encode(payload, config.SECRET_KEY, algorithm='HS256')
-    # PyJWT trả str (v2.x) hoặc bytes (v1.x) => đảm bảo str
-    if isinstance(token, bytes):
-        token = token.decode('utf-8')
-    return token
 
-def decode_token(token):
-    return jwt.decode(token, config.SECRET_KEY, algorithms=['HS256'])
+# ---------------- REGISTER ----------------
+@app.route("/register", methods=["GET", "POST"])
+def register_page():
+    if request.method == "GET":
+        return render_template("register.html")
 
-from functools import wraps
+    data = request.get_json() if request.is_json else request.form
 
-def token_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        auth_header = request.headers.get('Authorization', None)
-        if not auth_header:
-            return jsonify({'error': 'Missing Authorization header'}), 401
-        parts = auth_header.split()
-        if parts[0].lower() != 'bearer' or len(parts) != 2:
-            return jsonify({'error': 'Invalid Authorization header format. Use: Bearer <token>'}), 401
-        token = parts[1]
-        try:
-            data = decode_token(token)
-            # anh/chị có thể attach user info vào request (gọn)
-            request.user = data
-        except jwt.ExpiredSignatureError:
-            return jsonify({'error': 'Token expired'}), 401
-        except jwt.InvalidTokenError:
-            return jsonify({'error': 'Invalid token'}), 401
-        return f(*args, **kwargs)
-    return decorated
+    username = data.get("username")
+    password = data.get("password")
+    name = data.get("name")
+    age = data.get("age")
+    address = data.get("address", "")
 
-def admin_required(f):
-    @wraps(f)
-    @token_required
-    def decorated(*args, **kwargs):
-        user = getattr(request, 'user', None)
-        if not user or user.get('role') != 'admin':
-            return jsonify({'error': 'Admin privilege required'}), 403
-        return f(*args, **kwargs)
-    return decorated
+    if not username or not password or not name or not age:
+        return render_template("register.html", msg="Thiếu thông tin!")
 
-# ---------- Routes: Register / Login (HTML forms + API) ----------
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if request.method == 'POST':
-        # Hỗ trợ cả form html và json
-        data = request.form if request.form else request.get_json() or {}
-        username = data.get('username')
-        password = data.get('password')
-        role = data.get('role', 'user')  # mặc định user; bạn có thể cấp admin trực tiếp trong DB
+    if find_user(username):
+        return render_template("register.html", msg="Tên đăng nhập đã tồn tại!")
 
-        if not username or not password:
-            return jsonify({'error': 'username và password bắt buộc'}), 400
+    # ✅ Lưu người dùng mới (mặc định role = user)
+    create_user({
+        "username": username,
+        "password": password,
+        "name": name,
+        "age": age,
+        "address": address
+    })
 
-        if users_col.find_one({'username': username}):
-            return jsonify({'error': 'Username đã tồn tại'}), 400
+    return redirect(url_for("login_page"))
 
-        # Hash mật khẩu
-        hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-        # Lưu hash dưới dạng chuỗi (utf-8) để dễ đọc trong Mongo
-        users_col.insert_one({
-            'username': username,
-            'password': hashed.decode('utf-8'),
-            'role': role
-        })
-        # Nếu request từ form, redirect về login; nếu JSON, trả token hoặc message
-        if request.form:
-            return redirect(url_for('login'))
-        return jsonify({'message': 'Đăng ký thành công'}), 201
 
-    # GET -> trả form HTML
-    return render_template('register.html')
+# ---------------- LOGIN ----------------
+@app.route("/login", methods=["GET", "POST"])
+def login_page():
+    if request.method == "GET":
+        return render_template("login.html")
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        data = request.form if request.form else request.get_json() or {}
-        username = data.get('username')
-        password = data.get('password')
-        if not username or not password:
-            return jsonify({'error': 'username và password bắt buộc'}), 400
+    data = request.get_json() if request.is_json else request.form
+    username = data.get("username")
+    password = data.get("password")
 
-        user = users_col.find_one({'username': username})
-        if not user:
-            return jsonify({'error': 'Username hoặc password sai'}), 401
+    if not username or not password:
+        return render_template("login.html", msg="Thiếu thông tin đăng nhập!")
 
-        stored_hash = user['password']
-        if isinstance(stored_hash, str):
-            stored_hash = stored_hash.encode('utf-8')
+    user = find_user(username)
+    if not user or not check_password(password, user["password"]):
+        return render_template("login.html", msg="Sai tên đăng nhập hoặc mật khẩu!")
 
-        if bcrypt.checkpw(password.encode('utf-8'), stored_hash):
-            token = create_token(user)
-            # Nếu form HTML -> show token (bạn có thể redirect frontend)
-            if request.form:
-                return jsonify({'message': 'Đăng nhập thành công', 'token': token})
-            return jsonify({'token': token})
-        else:
-            return jsonify({'error': 'Username hoặc password sai'}), 401
+    # ✅ Tạo JWT token có chứa thông tin role
+    identity = {"username": username, "role": user["role"]}
+    token = create_access_token(identity=identity, expires_delta=timedelta(hours=1))
+    update_token(username, token)
 
-    return render_template('login.html')
+    # Lưu session
+    session["username"] = username
+    session["token"] = token
+    session["role"] = user["role"]
 
-# ---------- Ví dụ route user (protected) ----------
-@app.route('/profile')
-@token_required
-def profile():
-    user = getattr(request, 'user', {})
-    return jsonify({'message': 'Thông tin user', 'user': user})
+    # ✅ Phân quyền điều hướng
+    if user["role"] == "admin":
+        # 👉 Nếu là admin → ở lại Auth Service để vào dashboard quản trị
+        return redirect(url_for("admin_dashboard"))
+    else:
+        # 👉 Nếu là user → điều hướng sang BOOK SERVICE (bạn sẽ tạo sau)
+        # 📘 TODO: Sau này bạn tạo service_book và cập nhật đường dẫn tại đây.
+        # 📘 Ví dụ: return redirect(f"http://127.0.0.1:5003/?token={token}&username={username}")
+        return "<h3>🚧 User login thành công — sau này sẽ điều hướng sang Book Service 🚧</h3>"
 
-# ---------- Ví dụ route admin ----------
-@app.route('/admin')
-@admin_required
-def admin_panel():
-    # Ví dụ: liệt kê users (thực tế admin service có thể gọi service khác để lấy sách / mượn)
-    users = list(users_col.find({}, {'password': 0}))  # ẩn password
-    # Convert ObjectId -> str nếu cần (đơn giản ở đây ta bỏ _id)
-    for u in users:
-        u['_id'] = str(u.get('_id'))
-    return jsonify({'admin': True, 'users': users})
 
-# ---------- Run ----------
-if __name__ == '__main__':
-    app.run(port=config.SERVICE_PORT, debug=True)
+# ---------------- ADMIN DASHBOARD ----------------
+@app.route("/admin")
+def admin_dashboard():
+    """Trang dashboard trung tâm của admin"""
+    if "username" not in session or session.get("role") != "admin":
+        return redirect(url_for("login_page"))
+
+    username = session["username"]
+    token = session["token"]
+
+    return render_template("admin_dashboard.html", admin=username, token=token)
+
+
+# ---------------- VERIFY TOKEN API ----------------
+@app.route("/auth/verify", methods=["POST"])
+def verify_token():
+    token = request.headers.get("Authorization")
+    if not token:
+        return jsonify({"valid": False, "error": "Thiếu token"}), 401
+
+    try:
+        decoded = decode_token(token)
+        return jsonify({
+            "valid": True,
+            "username": decoded["sub"]["username"],
+            "role": decoded["sub"]["role"]
+        }), 200
+    except Exception as e:
+        return jsonify({"valid": False, "error": str(e)}), 401
+
+
+# ---------------- LOGOUT ----------------
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login_page"))
+
+
+# ---------------- HOME ----------------
+@app.route("/")
+def home():
+    return redirect(url_for("login_page"))
+
+
+if __name__ == "__main__":
+    register_service()
+    app.run(port=SERVICE_PORT, debug=True)
