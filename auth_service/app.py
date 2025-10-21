@@ -5,13 +5,14 @@ from models.user_model import create_user, find_user, update_token, check_passwo
 from service_registry import register_service
 from config import *
 import consul
+import jwt as pyjwt
 
 app = Flask(__name__)
 app.secret_key = "auth_secret"
 
 # JWT setup
 app.config["JWT_SECRET_KEY"] = JWT_SECRET
-jwt = JWTManager(app)
+jwt_manager = JWTManager(app)
 
 
 # ---------------- HEALTH CHECK ----------------
@@ -87,7 +88,8 @@ def login_page():
         # 👉 Nếu là user → điều hướng sang BOOK SERVICE (bạn sẽ tạo sau)
         # 📘 TODO: Sau này bạn tạo service_book và cập nhật đường dẫn tại đây.
         # 📘 Ví dụ: return redirect(f"http://127.0.0.1:5003/?token={token}&username={username}")
-        return "<h3>🚧 User login thành công — sau này sẽ điều hướng sang Book Service 🚧</h3>"
+        # return "<h3>🚧 User login thành công — sau này sẽ điều hướng sang Book Service 🚧</h3>"
+        return redirect(f"http://127.0.0.1:5003/?token={token}&username={username}")
 
 
 # ---------------- ADMIN DASHBOARD ----------------
@@ -106,19 +108,56 @@ def admin_dashboard():
 # ---------------- VERIFY TOKEN API ----------------
 @app.route("/auth/verify", methods=["POST"])
 def verify_token():
-    token = request.headers.get("Authorization")
-    if not token:
+    auth_header = request.headers.get("Authorization")
+    
+    print("Auth Debug Info:")
+    print(f"Received Authorization header: {auth_header}")
+    
+    if not auth_header:
         return jsonify({"valid": False, "error": "Thiếu token"}), 401
 
     try:
-        decoded = decode_token(token)
+        # Extract token from Bearer header
+        if auth_header.startswith("Bearer "):
+            token = auth_header.split(" ")[1].strip()
+        else:
+            token = auth_header.strip()
+            
+        print(f"Extracted token: {token}")
+
+        # Use PyJWT (pyjwt) for low-level decode/validation
+        decoded = pyjwt.decode(
+            token,
+            app.config["JWT_SECRET_KEY"],
+            algorithms=["HS256"],
+            options={"verify_sub": False}  # Don't verify subject claim
+        )
+        
+        print(f"Decoded token: {decoded}")
+        
+        # Extract identity from sub claim
+        if not isinstance(decoded.get('sub'), dict):
+            return jsonify({"valid": False, "error": "Invalid token format"}), 401
+            
+        identity = decoded['sub']
+        if not all(k in identity for k in ['username', 'role']):
+            return jsonify({"valid": False, "error": "Missing required claims"}), 401
+
         return jsonify({
             "valid": True,
-            "username": decoded["sub"]["username"],
-            "role": decoded["sub"]["role"]
+            "username": identity["username"],
+            "role": identity["role"]
         }), 200
-    except Exception as e:
+        
+    except pyjwt.ExpiredSignatureError:
+        return jsonify({"valid": False, "error": "Token has expired"}), 401
+
+    except pyjwt.InvalidTokenError as e:
+        print(f"Token validation error: {str(e)}")
         return jsonify({"valid": False, "error": str(e)}), 401
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")
+        return jsonify({"valid": False, "error": "Invalid token"}), 401
 
 
 # ---------------- LOGOUT ----------------

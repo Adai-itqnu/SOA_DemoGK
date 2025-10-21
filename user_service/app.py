@@ -58,7 +58,7 @@ def home():
     session["token"] = token
 
     all_users = get_all_users()
-    return render_template("users.html", users=all_users, admin=username)
+    return render_template("books_users.html", users=all_users, admin=username)
 
 
 # ---------------- REST API CRUD ----------------
