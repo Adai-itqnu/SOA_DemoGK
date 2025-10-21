@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Quản lý sách</title>
+  <style>
+    body { font-family: Arial; background: #f4f6f8; text-align: center; }
+    form { margin: 20px auto; display: flex; justify-content: center; gap: 10px; }
+    input { padding: 8px; }
+    button { padding: 8px 12px; background: #007bff; color: white; border: none; cursor: pointer; }
+    table { width: 90%; margin: 20px auto; border-collapse: collapse; background: #fff; }
+    th, td { padding: 12px; border-bottom: 1px solid #ccc; }
+    th { background: #007bff; color: white; }
+  </style>
+</head>
+<body>
+  <h2>📖 Xin chào Admin {{ admin }} - Quản lý sách</h2>
+  <a href="/logout">Đăng xuất</a>
+
+  <form onsubmit="return addBook(event)">
+    <input id="id" type="number" placeholder="ID" required>
+    <input id="title" type="text" placeholder="Tiêu đề" required>
+    <input id="author" type="text" placeholder="Tác giả" required>
+    <input id="category" type="text" placeholder="Thể loại">
+    <input id="quantity" type="number" placeholder="Số lượng" required>
+    <button type="submit">➕ Thêm</button>
+  </form>
+
+  <table>
+    <tr>
+      <th>ID</th><th>Tiêu đề</th><th>Tác giả</th><th>Thể loại</th><th>Số lượng</th><th>Cập nhật</th><th>Xóa</th>
+    </tr>
+    {% for b in books %}
+    <tr>
+      <td>{{ b.id }}</td>
+      <td><input id="title_{{ b.id }}" value="{{ b.title }}"></td>
+      <td><input id="author_{{ b.id }}" value="{{ b.author }}"></td>
+      <td><input id="category_{{ b.id }}" value="{{ b.category }}"></td>
+      <td><input id="quantity_{{ b.id }}" type="number" value="{{ b.quantity }}"></td>
+      <td><button onclick="updateBook('{{ b.id }}')">💾</button></td>
+      <td><button onclick="deleteBook('{{ b.id }}')">🗑️</button></td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <script>
+  async function addBook(e) {
+    e.preventDefault();
+    const data = {
+      id: parseInt(document.getElementById("id").value),
+      title: document.getElementById("title").value,
+      author: document.getElementById("author").value,
+      category: document.getElementById("category").value,
+      quantity: parseInt(document.getElementById("quantity").value)
+    };
+    await fetch("/books", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(data)});
+    location.reload();
+  }
+
+  async function updateBook(id) {
+    const data = {
+      title: document.getElementById(`title_${id}`).value,
+      author: document.getElementById(`author_${id}`).value,
+      category: document.getElementById(`category_${id}`).value,
+      quantity: parseInt(document.getElementById(`quantity_${id}`).value)
+    };
+    await fetch(`/books/${id}`, {method: "PUT", headers: {"Content-Type": "application/json"}, body: JSON.stringify(data)});
+    location.reload();
+  }
+
+  async function deleteBook(id) {
+    if (confirm("Bạn chắc chắn muốn xóa sách này?"))
+      await fetch(`/books/${id}`, {method: "DELETE"});
+    location.reload();
+  }
+  </script>
+</body>
+</html>

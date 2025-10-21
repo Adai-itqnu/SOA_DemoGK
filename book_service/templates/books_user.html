@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Danh sách sách</title>
+  <style>
+    body { font-family: Arial; background: #f4f6f8; text-align: center; }
+    table { width: 90%; margin: 20px auto; border-collapse: collapse; background: #fff; }
+    th, td { padding: 12px; border-bottom: 1px solid #ccc; }
+    th { background: #007bff; color: white; }
+  </style>
+</head>
+<body>
+  <h2>📚 Xin chào {{ username }} - Danh sách sách có thể mượn</h2>
+  <a href="/logout">Đăng xuất</a>
+  <table>
+    <tr>
+      <th>ID</th><th>Tiêu đề</th><th>Tác giả</th><th>Thể loại</th><th>Số lượng</th>
+    </tr>
+    {% for b in books %}
+    <tr>
+      <td>{{ b.id }}</td>
+      <td>{{ b.title }}</td>
+      <td>{{ b.author }}</td>
+      <td>{{ b.category }}</td>
+      <td>{{ b.quantity }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</body>
+</html>
