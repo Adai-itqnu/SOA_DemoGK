@@ -16,15 +16,6 @@ def health():
     return jsonify({"status": "UP"}), 200
 
 
-# ---------------- CONSUL SERVICE DISCOVERY ----------------
-# def get_auth_service_url():
-#     """Tìm URL của auth-service trong Consul"""
-#     c = consul.Consul(host=CONSUL_HOST, port=CONSUL_PORT)
-#     services = c.agent.services()
-#     for s in services.values():
-#         if s["Service"] == AUTH_SERVICE_NAME:
-#             return f"http://{s['Address']}:{s['Port']}"
-#     return "http://127.0.0.1:5000"  # fallback nếu chưa đăng ký
 def get_auth_service_url(retries=5, delay=2):
     """Lấy URL Auth Service từ Consul, retry nếu chưa có. Nếu không tìm thấy -> fallback."""
     c = consul.Consul(host=CONSUL_HOST, port=CONSUL_PORT)
