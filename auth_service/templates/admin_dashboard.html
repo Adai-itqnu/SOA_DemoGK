@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Trang Quản Trị Hệ Thống</title>
+  <style>
+    /* Tổng thể */
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background-color: #f0f2f5;
+    }
+
+    /* Thanh tiêu đề */
+    header {
+      background: linear-gradient(135deg, #007bff, #00c3ff);
+      color: white;
+      padding: 20px 0;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: 0.5px;
+    }
+
+    header p {
+      margin: 5px 0 0;
+      font-size: 16px;
+      opacity: 0.9;
+    }
+
+    /* Container chính */
+    .container {
+      width: 80%;
+      max-width: 800px;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+      padding: 30px;
+      text-align: center;
+      transition: transform 0.2s ease;
+    }
+
+    .container:hover {
+      transform: translateY(-3px);
+    }
+
+    /* Menu button */
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      margin: 12px 0;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .btn:hover {
+      background: #0056b3;
+      transform: translateY(-2px);
+    }
+
+    /* Logout */
+    .logout {
+      background: #dc3545;
+    }
+
+    .logout:hover {
+      background: #b02a37;
+    }
+
+    footer {
+      text-align: center;
+      color: #777;
+      margin-top: 50px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <h1>Trang Quản Trị Hệ Thống</h1>
+    <p>Xin chào, <strong>{{ admin }}</strong> 👋</p>
+  </header>
+
+  <!-- Nội dung chính -->
+  <div class="container">
+    <h2>Chọn tác vụ quản lý</h2>
+
+    <!-- ✅ Liên kết các service -->
+    <a class="btn" href="http://127.0.0.1:5002/?token={{ token }}&username={{ admin }}">
+      👥 Quản lý người dùng
+    </a>
+
+    <a class="btn" href="http://127.0.0.1:5003/admin?token={{ token }}&username={{ admin }}">
+      📚 Quản lý sách
+    </a>
+
+    <a class="btn" href="#">
+      📦 Quản lý mượn trả (TODO)
+    </a>
+
+    <!-- Logout -->
+    <a class="btn logout" href="/logout">
+      🚪 Đăng xuất
+    </a>
+  </div>
+
+  <footer>
+    © 2025 Hệ thống quản lý thư viện SOA | Phiên bản Admin Dashboard
+  </footer>
+
+</body>
+</html>

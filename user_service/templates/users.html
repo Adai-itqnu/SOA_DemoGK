@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Quản lý người dùng</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background: linear-gradient(135deg, #007bff, #00c3ff);
+      color: white;
+      padding: 15px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    header h2 {
+      margin: 0;
+    }
+
+    header button {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    header button:hover {
+      background: #b02a37;
+    }
+
+    main {
+      width: 90%;
+      max-width: 1000px;
+      margin: 30px auto;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      padding: 20px 30px;
+    }
+
+    h3 {
+      text-align: center;
+      color: #333;
+    }
+
+    form {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      margin-bottom: 25px;
+      gap: 10px;
+    }
+
+    form input, form select {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    form button {
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 20px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    form button:hover {
+      background: #0056b3;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: center;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background: #007bff;
+      color: white;
+    }
+
+    tr:hover {
+      background: #f1f7ff;
+    }
+
+    button.action {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button.action:hover {
+      background: #1e7e34;
+    }
+
+    button.delete {
+      background: #dc3545;
+    }
+
+    button.delete:hover {
+      background: #b02a37;
+    }
+
+    footer {
+      text-align: center;
+      color: #777;
+      margin-top: 40px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <h2>Xin chào, Admin {{ admin }} 👑</h2>
+    <button onclick="window.location.href='/logout'">Đăng xuất</button>
+
+  </header>
+
+  <!-- Main -->
+  <main>
+    <h3>📋 Danh sách người dùng</h3>
+
+    <!-- Form thêm người dùng -->
+    <form onsubmit="return addUser(event)">
+      <input type="text" id="name" placeholder="Họ tên" required>
+      <input type="text" id="username" placeholder="Username" required>
+      <input type="password" id="password" placeholder="Mật khẩu" required>
+      <input type="number" id="age" placeholder="Tuổi" required>
+      <input type="text" id="address" placeholder="Địa chỉ">
+      <select id="role">
+        <option value="user">User</option>
+        <option value="admin">Admin</option>
+      </select>
+      <button type="submit">➕ Thêm</button>
+    </form>
+
+    <!-- Bảng danh sách -->
+    <table>
+      <tr>
+        <th>ID</th>
+        <th>Họ tên</th>
+        <th>Username</th>
+        <th>Tuổi</th>
+        <th>Địa chỉ</th>
+        <th>Role</th>
+        <th>Cập nhật</th>
+        <th>Xóa</th>
+      </tr>
+      {% for u in users %}
+      <tr>
+        <td>{{ u.id }}</td>
+        <td><input type="text" id="name_{{ u.username }}" value="{{ u.name }}"></td>
+        <td>{{ u.username }}</td>
+        <td><input type="number" id="age_{{ u.username }}" value="{{ u.age }}"></td>
+        <td><input type="text" id="address_{{ u.username }}" value="{{ u.address }}"></td>
+        <td>
+          <select id="role_{{ u.username }}">
+            <option value="user" {% if u.role == 'user' %}selected{% endif %}>User</option>
+            <option value="admin" {% if u.role == 'admin' %}selected{% endif %}>Admin</option>
+          </select>
+        </td>
+        <td><button class="action" onclick="updateUser('{{ u.username }}')">💾 Lưu</button></td>
+        <td><button class="action delete" onclick="deleteUser('{{ u.username }}')">🗑️ Xóa</button></td>
+      </tr>
+      {% endfor %}
+    </table>
+  </main>
+
+  <footer>
+    © 2025 Hệ thống quản trị người dùng | SOA Flask + MongoDB
+  </footer>
+
+  <!-- JavaScript CRUD -->
+  <script>
+  async function addUser(event) {
+    event.preventDefault();
+    const data = {
+      name: document.getElementById("name").value,
+      username: document.getElementById("username").value,
+      password: document.getElementById("password").value,
+      age: parseInt(document.getElementById("age").value),
+      address: document.getElementById("address").value,
+      role: document.getElementById("role").value
+    };
+    await fetch("/users", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(data)
+    });
+    location.reload();
+  }
+
+  async function updateUser(username) {
+    const data = {
+      name: document.getElementById(`name_${username}`).value,
+      age: parseInt(document.getElementById(`age_${username}`).value),
+      address: document.getElementById(`address_${username}`).value,
+      role: document.getElementById(`role_${username}`).value
+    };
+    await fetch(`/users/${username}`, {
+      method: "PUT",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(data)
+    });
+    location.reload();
+  }
+
+  async function deleteUser(username) {
+    if (!confirm(`Bạn có chắc muốn xóa người dùng ${username}?`)) return;
+    await fetch(`/users/${username}`, { method: "DELETE" });
+    location.reload();
+  }
+  </script>
+</body>
+</html>
