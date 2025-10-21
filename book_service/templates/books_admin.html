@@ -1,78 +1,273 @@
 <!DOCTYPE html>
 <html lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <title>Quản lý sách</title>
-  <style>
-    body { font-family: Arial; background: #f4f6f8; text-align: center; }
-    form { margin: 20px auto; display: flex; justify-content: center; gap: 10px; }
-    input { padding: 8px; }
-    button { padding: 8px 12px; background: #007bff; color: white; border: none; cursor: pointer; }
-    table { width: 90%; margin: 20px auto; border-collapse: collapse; background: #fff; }
-    th, td { padding: 12px; border-bottom: 1px solid #ccc; }
-    th { background: #007bff; color: white; }
-  </style>
-</head>
-<body>
-  <h2>📖 Xin chào Admin {{ admin }} - Quản lý sách</h2>
-  <a href="/logout">Đăng xuất</a>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Quản lý sách</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: #f4f6f8;
+        margin: 0;
+        padding: 0;
+      }
 
-  <form onsubmit="return addBook(event)">
-    <input id="id" type="number" placeholder="ID" required>
-    <input id="title" type="text" placeholder="Tiêu đề" required>
-    <input id="author" type="text" placeholder="Tác giả" required>
-    <input id="category" type="text" placeholder="Thể loại">
-    <input id="quantity" type="number" placeholder="Số lượng" required>
-    <button type="submit">➕ Thêm</button>
-  </form>
+      header {
+        background: linear-gradient(135deg, #007bff, #00c3ff);
+        color: white;
+        padding: 15px 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
 
-  <table>
-    <tr>
-      <th>ID</th><th>Tiêu đề</th><th>Tác giả</th><th>Thể loại</th><th>Số lượng</th><th>Cập nhật</th><th>Xóa</th>
-    </tr>
-    {% for b in books %}
-    <tr>
-      <td>{{ b.id }}</td>
-      <td><input id="title_{{ b.id }}" value="{{ b.title }}"></td>
-      <td><input id="author_{{ b.id }}" value="{{ b.author }}"></td>
-      <td><input id="category_{{ b.id }}" value="{{ b.category }}"></td>
-      <td><input id="quantity_{{ b.id }}" type="number" value="{{ b.quantity }}"></td>
-      <td><button onclick="updateBook('{{ b.id }}')">💾</button></td>
-      <td><button onclick="deleteBook('{{ b.id }}')">🗑️</button></td>
-    </tr>
-    {% endfor %}
-  </table>
+      header h2 {
+        margin: 0;
+      }
 
-  <script>
-  async function addBook(e) {
-    e.preventDefault();
-    const data = {
-      id: parseInt(document.getElementById("id").value),
-      title: document.getElementById("title").value,
-      author: document.getElementById("author").value,
-      category: document.getElementById("category").value,
-      quantity: parseInt(document.getElementById("quantity").value)
-    };
-    await fetch("/books", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(data)});
-    location.reload();
-  }
+      header .btn {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.3s;
+      }
 
-  async function updateBook(id) {
-    const data = {
-      title: document.getElementById(`title_${id}`).value,
-      author: document.getElementById(`author_${id}`).value,
-      category: document.getElementById(`category_${id}`).value,
-      quantity: parseInt(document.getElementById(`quantity_${id}`).value)
-    };
-    await fetch(`/books/${id}`, {method: "PUT", headers: {"Content-Type": "application/json"}, body: JSON.stringify(data)});
-    location.reload();
-  }
+      header .btn:hover {
+        background: #b02a37;
+      }
 
-  async function deleteBook(id) {
-    if (confirm("Bạn chắc chắn muốn xóa sách này?"))
-      await fetch(`/books/${id}`, {method: "DELETE"});
-    location.reload();
-  }
-  </script>
-</body>
+      main {
+        width: 90%;
+        max-width: 1100px;
+        margin: 30px auto;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        padding: 20px 30px;
+      }
+
+      h3 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 25px;
+      }
+
+      form {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 25px;
+      }
+
+      form input {
+        flex: 1;
+        min-width: 150px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 14px;
+      }
+
+      form button {
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 10px 20px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+
+      form button:hover {
+        background: #0056b3;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: 12px;
+        text-align: center;
+        border-bottom: 1px solid #ddd;
+      }
+
+      th {
+        background: #007bff;
+        color: white;
+      }
+
+      tr:hover {
+        background: #f1f7ff;
+      }
+
+      button.action {
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+
+      button.action:hover {
+        background: #1e7e34;
+      }
+
+      button.delete {
+        background: #dc3545;
+      }
+
+      button.delete:hover {
+        background: #b02a37;
+      }
+
+      .back-btn {
+        background: #6c757d;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 10px 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.3s;
+        text-decoration: none;
+      }
+
+      .back-btn:hover {
+        background: #5a6268;
+      }
+
+      footer {
+        text-align: center;
+        color: #777;
+        margin-top: 40px;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Header -->
+    <header>
+      <h2>📚 Xin chào, Admin {{ admin }} 👑</h2>
+      <div>
+        <a href="/logout"><button class="btn">Đăng xuất</button></a>
+      </div>
+    </header>
+
+    <!-- Main -->
+    <main>
+      <h3>📖 Danh sách sách trong thư viện</h3>
+
+      <!-- Form thêm sách -->
+      <form onsubmit="return addBook(event)">
+        <input id="id" type="number" placeholder="ID" required />
+        <input id="title" type="text" placeholder="Tiêu đề" required />
+        <input id="author" type="text" placeholder="Tác giả" required />
+        <input id="category" type="text" placeholder="Thể loại" />
+        <input id="quantity" type="number" placeholder="Số lượng" required />
+        <button type="submit">➕ Thêm</button>
+      </form>
+
+      <!-- Bảng -->
+      <table>
+        <tr>
+          <th>ID</th>
+          <th>Tiêu đề</th>
+          <th>Tác giả</th>
+          <th>Thể loại</th>
+          <th>Số lượng</th>
+          <th>Cập nhật</th>
+          <th>Xóa</th>
+        </tr>
+        {% for b in books %}
+        <tr>
+          <td>{{ b.id }}</td>
+          <td>
+            <input type="text" id="title_{{ b.id }}" value="{{ b.title }}" />
+          </td>
+          <td>
+            <input type="text" id="author_{{ b.id }}" value="{{ b.author }}" />
+          </td>
+          <td>
+            <input
+              type="text"
+              id="category_{{ b.id }}"
+              value="{{ b.category }}"
+            />
+          </td>
+          <td>
+            <input
+              type="number"
+              id="quantity_{{ b.id }}"
+              value="{{ b.quantity }}"
+            />
+          </td>
+          <td>
+            <button class="action" onclick="updateBook('{{ b.id }}')">
+              💾 Lưu
+            </button>
+          </td>
+          <td>
+            <button class="action delete" onclick="deleteBook('{{ b.id }}')">
+              🗑️ Xóa
+            </button>
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
+    </main>
+
+    <footer>© 2025 Hệ thống quản lý sách | SOA Flask + MongoDB</footer>
+
+    <!-- Script -->
+    <script>
+      async function addBook(e) {
+        e.preventDefault();
+        const data = {
+          id: parseInt(document.getElementById("id").value),
+          title: document.getElementById("title").value,
+          author: document.getElementById("author").value,
+          category: document.getElementById("category").value,
+          quantity: parseInt(document.getElementById("quantity").value),
+        };
+        await fetch("/books", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        location.reload();
+      }
+
+      async function updateBook(id) {
+        const data = {
+          title: document.getElementById(`title_${id}`).value,
+          author: document.getElementById(`author_${id}`).value,
+          category: document.getElementById(`category_${id}`).value,
+          quantity: parseInt(document.getElementById(`quantity_${id}`).value),
+        };
+        await fetch(`/books/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        location.reload();
+      }
+
+      async function deleteBook(id) {
+        if (!confirm("Bạn chắc chắn muốn xóa sách này?")) return;
+        await fetch(`/books/${id}`, { method: "DELETE" });
+        location.reload();
+      }
+    </script>
+  </body>
 </html>
