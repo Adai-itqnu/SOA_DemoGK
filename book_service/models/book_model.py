@@ -26,6 +26,10 @@ def get_all_books():
     books = list(collection.find({}, {"_id": 0}))
     return books
 
+def find_book_by_id(book_id):
+    book = collection.find_one({"id": book_id}, {"_id": 0})
+    return book
+
 # read (by id)
 def get_book_by_id(bid):
     return collection.find_one({"id":bid}, {"_id": 0})

@@ -131,4 +131,4 @@ def logout():
 
 if __name__ == "__main__":
     register_service()
-    app.run(port=5002, debug=True)
+    app.run(port=SERVICE_PORT, debug=True)

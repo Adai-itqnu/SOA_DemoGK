@@ -70,26 +70,20 @@ def login_page():
     if not user or not check_password(password, user["password"]):
         return render_template("login.html", msg="Sai tên đăng nhập hoặc mật khẩu!")
 
-    # ✅ Tạo JWT token có chứa thông tin role
     identity = {"username": username, "role": user["role"]}
     token = create_access_token(identity=identity, expires_delta=timedelta(hours=1))
     update_token(username, token)
 
-    # Lưu session
     session["username"] = username
     session["token"] = token
     session["role"] = user["role"]
 
-    # ✅ Phân quyền điều hướng
     if user["role"] == "admin":
-        # 👉 Nếu là admin → ở lại Auth Service để vào dashboard quản trị
         return redirect(url_for("admin_dashboard"))
     else:
-        # 👉 Nếu là user → điều hướng sang BOOK SERVICE (bạn sẽ tạo sau)
-        # 📘 TODO: Sau này bạn tạo service_book và cập nhật đường dẫn tại đây.
-        # 📘 Ví dụ: return redirect(f"http://127.0.0.1:5003/?token={token}&username={username}")
-        # return "<h3>🚧 User login thành công — sau này sẽ điều hướng sang Book Service 🚧</h3>"
+        # ✅ Chuyển sang borrow_service cho người dùng mượn sách
         return redirect(f"http://127.0.0.1:5003/?token={token}&username={username}")
+
 
 
 # ---------------- ADMIN DASHBOARD ----------------
