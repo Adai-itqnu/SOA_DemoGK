@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>📋 Quản lý phiếu mượn</title>
+  <style>
+    body { font-family: 'Segoe UI'; background: #f4f6f8; text-align: center; padding: 20px; }
+    h2 { color: #333; }
+    table { width: 90%; margin: 20px auto; border-collapse: collapse; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    th, td { padding: 10px; border-bottom: 1px solid #ddd; }
+    th { background: #007bff; color: white; text-transform: uppercase; }
+    tr:hover { background: #f1f7ff; }
+    button { background: #007bff; border: none; color: white; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    .add-btn { background: #28a745; margin-bottom: 20px; }
+    .add-btn:hover { background: #218838; }
+    a { text-decoration: none; color: white; }
+  </style>
+</head>
+<body>
+
+  <h2>📚 Xin chào Admin {{ admin }} - Quản lý phiếu mượn</h2>
+  <a href="/logout" style="background:#dc3545;padding:10px 15px;border-radius:8px;">🚪 Đăng xuất</a>
+  <a href="http://127.0.0.1:5000/admin" style="background:#6c757d;padding:10px 15px;border-radius:8px;">⬅ Quay lại Trang quản trị</a>
+
+  <table>
+    <tr>
+      <th>ID</th><th>Tên người mượn</th><th>Tựa sách</th><th>Số lượng</th>
+      <th>Ngày mượn</th><th>Ngày trả</th><th>Thao tác</th>
+    </tr>
+    {% for b in borrows %}
+    <tr>
+      <td>{{ b.borrow_id }}</td>
+      <td>{{ b.username }}</td>
+      <td>{{ b.book_title }}</td>
+      <td>{{ b.quantity }}</td>
+      <td>{{ b.borrow_date.strftime("%Y-%m-%d") }}</td>
+      <td>{{ b.return_date.strftime("%Y-%m-%d") }}</td>
+      <td>
+        <button onclick="deleteBorrow('{{ b.borrow_id }}')">🗑️ Xóa</button>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <script>
+  async function deleteBorrow(id) {
+    if (!confirm("Bạn có chắc muốn xóa phiếu mượn #" + id + "?")) return;
+    await fetch(`/borrows/${id}`, { method: "DELETE" });
+    location.reload();
+  }
+  </script>
+
+</body>
+</html>

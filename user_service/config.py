@@ -1,6 +1,6 @@
 MONGO_URI = "mongodb://localhost:27017/user_db"
 SERVICE_NAME = "user-service"
-SERVICE_PORT = 5002
+SERVICE_PORT = 5001
 JWT_SECRET = "mysecretkey"
 CONSUL_HOST = "localhost"
 CONSUL_PORT = 8500
