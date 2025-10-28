@@ -2,7 +2,7 @@
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
-    <title>Quản lý sách</title>
+    <title>📚 Quản lý sách</title>
     <style>
       body {
         font-family: "Segoe UI", Arial, sans-serif;
@@ -24,7 +24,6 @@
       header h2 {
         margin: 0;
       }
-
       header .btn {
         background: #dc3545;
         color: white;
@@ -35,7 +34,6 @@
         cursor: pointer;
         transition: 0.3s;
       }
-
       header .btn:hover {
         background: #b02a37;
       }
@@ -122,29 +120,11 @@
       button.action:hover {
         background: #1e7e34;
       }
-
       button.delete {
         background: #dc3545;
       }
-
       button.delete:hover {
         background: #b02a37;
-      }
-
-      .back-btn {
-        background: #6c757d;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        padding: 10px 16px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: 0.3s;
-        text-decoration: none;
-      }
-
-      .back-btn:hover {
-        background: #5a6268;
       }
 
       footer {
@@ -153,14 +133,39 @@
         margin-top: 40px;
         font-size: 14px;
       }
+
+      /* Loading spinner */
+      .loading {
+        text-align: center;
+        padding: 40px;
+        font-size: 18px;
+        color: #007bff;
+      }
+      .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #007bff;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 20px auto;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
     </style>
   </head>
   <body>
     <!-- Header -->
     <header>
-      <h2>📚 Xin chào, Admin {{ admin }} 👑</h2>
+      <h2>📚 Xin chào, Admin <span id="adminName"></span> 👑</h2>
       <div>
-        <a href="/logout"><button class="btn">Đăng xuất</button></a>
+        <button class="btn" onclick="logout()">Đăng xuất</button>
       </div>
     </header>
 
@@ -178,52 +183,28 @@
         <button type="submit">➕ Thêm</button>
       </form>
 
+      <!-- Loading indicator -->
+      <div id="loading" class="loading" style="display: none">
+        <div class="spinner"></div>
+        <p>Đang tải dữ liệu...</p>
+      </div>
+
       <!-- Bảng -->
-      <table>
-        <tr>
-          <th>ID</th>
-          <th>Tiêu đề</th>
-          <th>Tác giả</th>
-          <th>Thể loại</th>
-          <th>Số lượng</th>
-          <th>Cập nhật</th>
-          <th>Xóa</th>
-        </tr>
-        {% for b in books %}
-        <tr>
-          <td>{{ b.id }}</td>
-          <td>
-            <input type="text" id="title_{{ b.id }}" value="{{ b.title }}" />
-          </td>
-          <td>
-            <input type="text" id="author_{{ b.id }}" value="{{ b.author }}" />
-          </td>
-          <td>
-            <input
-              type="text"
-              id="category_{{ b.id }}"
-              value="{{ b.category }}"
-            />
-          </td>
-          <td>
-            <input
-              type="number"
-              id="quantity_{{ b.id }}"
-              value="{{ b.quantity }}"
-            />
-          </td>
-          <td>
-            <button class="action" onclick="updateBook('{{ b.id }}')">
-              💾 Lưu
-            </button>
-          </td>
-          <td>
-            <button class="action delete" onclick="deleteBook('{{ b.id }}')">
-              🗑️ Xóa
-            </button>
-          </td>
-        </tr>
-        {% endfor %}
+      <table id="booksTable" style="display: none">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Tiêu đề</th>
+            <th>Tác giả</th>
+            <th>Thể loại</th>
+            <th>Số lượng</th>
+            <th>Cập nhật</th>
+            <th>Xóa</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Sẽ được load bằng JavaScript -->
+        </tbody>
       </table>
     </main>
 
@@ -231,8 +212,83 @@
 
     <!-- Script -->
     <script>
+      // Load books when page loads
+      async function loadBooks() {
+        // Show loading
+        document.getElementById("loading").style.display = "block";
+        document.getElementById("booksTable").style.display = "none";
+
+        try {
+          const token = localStorage.getItem("token");
+          const response = await fetch("/book-api/books", {
+            headers: {
+              Authorization: "Bearer " + token,
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error("Không thể tải danh sách sách");
+          }
+
+          const books = await response.json();
+          displayBooks(books);
+
+          // Hide loading and show table
+          document.getElementById("loading").style.display = "none";
+          document.getElementById("booksTable").style.display = "table";
+        } catch (error) {
+          console.error("Lỗi:", error);
+          document.getElementById("loading").style.display = "none";
+          alert("Không thể tải danh sách sách. Vui lòng đăng nhập lại.");
+          window.location.href = "/auth/login";
+        }
+      }
+
+      function displayBooks(books) {
+        const tbody = document.querySelector("table tbody");
+        if (!tbody) return;
+
+        tbody.innerHTML = "";
+
+        books.forEach((book) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+          <td>${book.id}</td>
+          <td><input type="text" id="title_${book.id}" value="${
+            book.title || ""
+          }" /></td>
+          <td><input type="text" id="author_${book.id}" value="${
+            book.author || ""
+          }" /></td>
+          <td><input type="text" id="category_${book.id}" value="${
+            book.category || ""
+          }" /></td>
+          <td><input type="number" id="quantity_${book.id}" value="${
+            book.quantity || 0
+          }" /></td>
+          <td><button class="action" onclick="updateBook(${
+            book.id
+          })">💾 Lưu</button></td>
+          <td><button class="action delete" onclick="deleteBook(${
+            book.id
+          })">🗑️ Xóa</button></td>
+        `;
+          tbody.appendChild(row);
+        });
+      }
+
+      function logout() {
+        localStorage.clear();
+        window.location.href = "/auth/login";
+      }
+
       async function addBook(e) {
         e.preventDefault();
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = "⏳ Đang thêm...";
+        submitBtn.disabled = true;
+
         const data = {
           id: parseInt(document.getElementById("id").value),
           title: document.getElementById("title").value,
@@ -240,34 +296,121 @@
           category: document.getElementById("category").value,
           quantity: parseInt(document.getElementById("quantity").value),
         };
-        await fetch("/books", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        });
-        location.reload();
+
+        try {
+          const token = localStorage.getItem("token");
+          const res = await fetch("/book-api/books", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + token,
+            },
+            body: JSON.stringify(data),
+          });
+
+          if (res.ok) {
+            // Clear form
+            document.getElementById("id").value = "";
+            document.getElementById("title").value = "";
+            document.getElementById("author").value = "";
+            document.getElementById("category").value = "";
+            document.getElementById("quantity").value = "";
+
+            // Reload books
+            loadBooks();
+            alert("Thêm sách thành công!");
+          } else {
+            const err = await res.json();
+            alert("❌ Lỗi: " + err.error);
+          }
+        } catch (error) {
+          alert("❌ Lỗi: " + error.message);
+        } finally {
+          submitBtn.textContent = originalText;
+          submitBtn.disabled = false;
+        }
       }
 
       async function updateBook(id) {
+        const btn = event.target;
+        const originalText = btn.textContent;
+        btn.textContent = "⏳ Đang lưu...";
+        btn.disabled = true;
+
         const data = {
           title: document.getElementById(`title_${id}`).value,
           author: document.getElementById(`author_${id}`).value,
           category: document.getElementById(`category_${id}`).value,
           quantity: parseInt(document.getElementById(`quantity_${id}`).value),
         };
-        await fetch(`/books/${id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        });
-        location.reload();
+
+        try {
+          const token = localStorage.getItem("token");
+          const res = await fetch(`/book-api/books/${id}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + token,
+            },
+            body: JSON.stringify(data),
+          });
+
+          if (res.ok) {
+            alert("Cập nhật thành công!");
+          } else {
+            const err = await res.json();
+            alert("❌ Lỗi: " + err.error);
+          }
+        } catch (error) {
+          alert("❌ Lỗi: " + error.message);
+        } finally {
+          btn.textContent = originalText;
+          btn.disabled = false;
+        }
       }
 
       async function deleteBook(id) {
         if (!confirm("Bạn chắc chắn muốn xóa sách này?")) return;
-        await fetch(`/books/${id}`, { method: "DELETE" });
-        location.reload();
+
+        const btn = event.target;
+        const originalText = btn.textContent;
+        btn.textContent = "⏳ Đang xóa...";
+        btn.disabled = true;
+
+        try {
+          const token = localStorage.getItem("token");
+          const res = await fetch(`/book-api/books/${id}`, {
+            method: "DELETE",
+            headers: {
+              Authorization: "Bearer " + token,
+            },
+          });
+
+          if (res.ok) {
+            loadBooks();
+            alert("Xóa sách thành công!");
+          } else {
+            const err = await res.json();
+            alert("❌ Lỗi: " + err.error);
+          }
+        } catch (error) {
+          alert("❌ Lỗi: " + error.message);
+        } finally {
+          btn.textContent = originalText;
+          btn.disabled = false;
+        }
       }
+
+      // Load admin name and books when page loads
+      document.addEventListener("DOMContentLoaded", function () {
+        const username = localStorage.getItem("username");
+        if (username) {
+          document.getElementById("adminName").textContent = username;
+        } else {
+          window.location.href = "/auth/login";
+        }
+        loadBooks();
+      });
     </script>
   </body>
 </html>

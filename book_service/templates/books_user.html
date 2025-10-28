@@ -2,196 +2,174 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>📚 Danh sách sách có thể mượn</title>
+  <title>Danh sách sách</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #e8f0ff, #f4f6f8);
-      text-align: center;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f4f6f8;
       margin: 0;
-      padding: 20px;
+      padding: 0;
     }
-    h2 {
-      color: #333;
-      margin-bottom: 10px;
+
+    header {
+      background: linear-gradient(135deg, #28a745, #20c997);
+      color: white;
+      padding: 15px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-    a.logout {
-      display: inline-block;
-      margin-bottom: 20px;
-      padding: 10px 15px;
+
+    header h2 {
+      margin: 0;
+    }
+
+    header button {
       background: #dc3545;
       color: white;
-      border-radius: 8px;
-      text-decoration: none;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
     }
-    a.logout:hover { background: #b92b39; }
+
+    header button:hover {
+      background: #b02a37;
+    }
+
+    main {
+      width: 90%;
+      max-width: 1000px;
+      margin: 30px auto;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      padding: 20px 30px;
+    }
+
+    h3 {
+      text-align: center;
+      color: #333;
+    }
 
     table {
-      width: 90%;
-      margin: 0 auto;
+      width: 100%;
       border-collapse: collapse;
-      background: #fff;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin-top: 15px;
     }
-    th {
-      background: #007bff;
-      color: white;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
+
     th, td {
       padding: 12px;
+      text-align: center;
       border-bottom: 1px solid #ddd;
     }
-    tr:hover { background: #f1f7ff; }
 
-    button {
-      background: #007bff;
-      border: none;
-      padding: 8px 12px;
+    th {
+      background: #28a745;
       color: white;
-      border-radius: 6px;
-      cursor: pointer;
     }
-    button:hover { background: #0056b3; }
 
-    /* Modal */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.4);
-      justify-content: center;
-      align-items: center;
+    tr:hover {
+      background: #f1f7ff;
     }
-    .modal-content {
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      width: 300px;
-      text-align: left;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+
+    .quantity {
+      font-weight: bold;
+      color: #28a745;
     }
-    .modal-content h3 { text-align: center; }
-    .modal-content input, .modal-content select {
-      width: 100%;
-      margin: 8px 0;
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
+
+    .quantity.low {
+      color: #dc3545;
     }
-    .close {
-      float: right;
-      font-size: 20px;
-      cursor: pointer;
-      color: #aaa;
+
+    footer {
+      text-align: center;
+      color: #777;
+      margin-top: 40px;
+      font-size: 14px;
     }
-    .close:hover { color: #000; }
   </style>
 </head>
 <body>
 
-  <h2>📖 Xin chào, {{ username }}!</h2>
-  <p>Danh sách các sách hiện có thể mượn</p>
-  <a class="logout" href="/logout">🚪 Đăng xuất</a>
+  <!-- Header -->
+  <header>
+    <h2>📚 Danh sách sách</h2>
+    <button onclick="window.location.href='/borrow'">Mượn sách</button>
+  </header>
 
-  <table>
-    <tr>
-      <th>ID</th><th>Tiêu đề</th><th>Tác giả</th><th>Thể loại</th><th>Số lượng</th><th>Mượn</th>
-    </tr>
-    {% for b in books %}
-    <tr>
-      <td>{{ b.id }}</td>
-      <td>{{ b.title }}</td>
-      <td>{{ b.author }}</td>
-      <td>{{ b.category }}</td>
-      <td>{{ b.quantity }}</td>
-      <td>
-        <button onclick="openModal('{{ b.id }}', '{{ b.title }}', '{{ b.quantity }}')">📘 Mượn</button>
-      </td>
-    </tr>
-    {% endfor %}
-  </table>
+  <!-- Main -->
+  <main>
+    <h3>📖 Kho sách hiện có</h3>
 
-  <!-- Modal -->
-  <div id="borrowModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal()">&times;</span>
-      <h3>📖 Mượn sách</h3>
-      <p id="bookTitle"></p>
-      <input type="hidden" id="bookId">
-      <label>Số lượng:</label>
-      <input type="number" id="quantity" min="1">
-      <label>Số ngày mượn:</label>
-      <select id="days">
-        <option value="1">1 ngày</option>
-        <option value="2">2 ngày</option>
-        <option value="3">3 ngày</option>
-        <option value="5">5 ngày</option>
-        <option value="7">7 ngày</option>
-      </select>
-      <button onclick="borrowBook()">✅ Xác nhận mượn</button>
-    </div>
-  </div>
+    <!-- Bảng danh sách sách -->
+    <table>
+      <tr>
+        <th>ID</th>
+        <th>Tên sách</th>
+        <th>Tác giả</th>
+        <th>Thể loại</th>
+        <th>Số lượng</th>
+      </tr>
+      <tbody id="booksTable">
+        <!-- Sẽ được load bằng JavaScript -->
+      </tbody>
+    </table>
+  </main>
 
+  <footer>
+    © 2025 Hệ thống quản lý thư viện | SOA Flask + MongoDB
+  </footer>
+
+  <!-- JavaScript -->
   <script>
-    let modal = document.getElementById("borrowModal");
-    let currentBookId = null;
-    let currentBookTitle = null;
-    let maxQuantity = 0;
-
-    function openModal(id, title, availableQty) {
-      currentBookId = id;
-      currentBookTitle = title;
-      maxQuantity = availableQty;
-      document.getElementById("bookTitle").innerText = `📘 ${title}`;
-      document.getElementById("quantity").value = 1;
-      document.getElementById("quantity").max = availableQty;
-      modal.style.display = "flex";
-    }
-
-    function closeModal() {
-      modal.style.display = "none";
-    }
-
-    async function borrowBook() {
-      const quantity = parseInt(document.getElementById("quantity").value);
-      const days = parseInt(document.getElementById("days").value);
-
-      if (quantity <= 0 || quantity > maxQuantity) {
-        alert("❌ Số lượng không hợp lệ!");
-        return;
-      }
-
-      const data = {
-        book_id: currentBookId,
-        quantity: quantity,
-        days: days
-      };
-
-      const res = await fetch("/borrow", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(data)
+  async function loadBooks() {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/book-api/books', {
+        headers: {
+          'Authorization': 'Bearer ' + token
+        }
       });
-
-      if (res.ok) {
-        alert("✅ Mượn sách thành công!");
-        closeModal();
-        location.reload();
-      } else {
-        const err = await res.json();
-        alert("❌ Lỗi: " + err.error);
+      
+      if (!response.ok) {
+        throw new Error('Không thể tải danh sách sách');
       }
+      
+      const books = await response.json();
+      displayBooks(books);
+    } catch (error) {
+      console.error('Lỗi:', error);
+      document.getElementById('booksTable').innerHTML = 
+        '<tr><td colspan="5" style="text-align: center; color: red;">Không thể tải danh sách sách</td></tr>';
     }
+  }
 
-    window.onclick = function(event) {
-      if (event.target === modal) closeModal();
-    }
+  function displayBooks(books) {
+    const tbody = document.getElementById('booksTable');
+    tbody.innerHTML = '';
+    
+    books.forEach(book => {
+      const row = document.createElement('tr');
+      const quantityClass = book.quantity <= 5 ? 'quantity low' : 'quantity';
+      
+      row.innerHTML = `
+        <td>${book.id}</td>
+        <td>${book.title}</td>
+        <td>${book.author}</td>
+        <td>${book.category || 'Chưa phân loại'}</td>
+        <td class="${quantityClass}">${book.quantity}</td>
+      `;
+      
+      tbody.appendChild(row);
+    });
+  }
+
+  // Load books khi trang được tải
+  loadBooks();
   </script>
-
 </body>
 </html>

@@ -7,65 +7,25 @@
     body {
       font-family: "Segoe UI", sans-serif;
       background: linear-gradient(135deg, #11998e, #38ef7d);
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      height: 100vh; display: flex; justify-content: center; align-items: center;
     }
-
     .container {
-      background: white;
-      padding: 40px;
-      border-radius: 15px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-      width: 380px;
-      text-align: center;
+      background: white; padding: 40px; border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2); width: 380px; text-align: center;
     }
-
-    h2 {
-      color: #11998e;
-      margin-bottom: 20px;
-    }
-
+    h2 { color: #11998e; margin-bottom: 20px; }
     input {
-      width: 85%;
-      padding: 10px;
-      margin: 8px 0;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 15px;
+      width: 90%; padding: 12px; margin: 8px 0;
+      border: 1px solid #ccc; border-radius: 8px; font-size: 15px;
     }
-
     button {
-      width: 90%;
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      background-color: #11998e;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background 0.3s;
+      width: 95%; padding: 12px; border: none; border-radius: 8px;
+      background-color: #11998e; color: white; font-size: 16px;
+      cursor: pointer; transition: background 0.3s;
     }
-
-    button:hover {
-      background-color: #0e8077;
-    }
-
-    .msg {
-      color: red;
-      margin-top: 10px;
-    }
-
-    a {
-      color: #11998e;
-      text-decoration: none;
-    }
-
-    a:hover {
-      text-decoration: underline;
-    }
-
+    button:hover { background-color: #0e8077; }
+    a { color: #11998e; text-decoration: none; }
+    a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -79,10 +39,7 @@
       <input type="text" name="address" placeholder="Địa chỉ"><br>
       <button type="submit">Đăng ký</button>
     </form>
-    {% if msg %}
-      <p class="msg">{{ msg }}</p>
-    {% endif %}
-    <p>Đã có tài khoản? <a href="/login">Đăng nhập</a></p>
+    <p>Đã có tài khoản? <a href="/auth/login">Đăng nhập</a></p>
   </div>
 </body>
 </html>

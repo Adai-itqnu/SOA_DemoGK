@@ -1,55 +1,241 @@
 <!DOCTYPE html>
 <html lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <title>📋 Quản lý phiếu mượn</title>
-  <style>
-    body { font-family: 'Segoe UI'; background: #f4f6f8; text-align: center; padding: 20px; }
-    h2 { color: #333; }
-    table { width: 90%; margin: 20px auto; border-collapse: collapse; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    th, td { padding: 10px; border-bottom: 1px solid #ddd; }
-    th { background: #007bff; color: white; text-transform: uppercase; }
-    tr:hover { background: #f1f7ff; }
-    button { background: #007bff; border: none; color: white; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
-    button:hover { background: #0056b3; }
-    .add-btn { background: #28a745; margin-bottom: 20px; }
-    .add-btn:hover { background: #218838; }
-    a { text-decoration: none; color: white; }
-  </style>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>📦 Quản lý phiếu mượn</title>
+    <style>
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: #f4f6f9;
+        margin: 0;
+      }
+      /* Top header */
+      .topbar {
+        background: linear-gradient(135deg, #1e90ff, #00c3ff);
+        color: #fff;
+        padding: 16px 22px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      }
+      .topbar .title {
+        font-size: 18px;
+        font-weight: 600;
+      }
+      .logout {
+        display: inline-block;
+        padding: 10px 14px;
+        background: #dc3545;
+        color: #fff;
+        border-radius: 8px;
+        text-decoration: none;
+      }
+      .logout:hover {
+        background: #b02a37;
+      }
+      /* Card container */
+      .wrapper {
+        max-width: 1160px;
+        margin: 26px auto;
+        padding: 0 16px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(2, 6, 23, 0.06);
+        padding: 20px;
+      }
+      .card h2 {
+        margin: 0 0 14px;
+        font-size: 20px;
+        color: #0f172a;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      /* Table */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      thead th {
+        background: #0d6efd;
+        color: #fff;
+        text-align: left;
+        padding: 12px 14px;
+      }
+      tbody td {
+        padding: 10px 14px;
+        background: #fff;
+      }
+      tbody tr:nth-child(even) {
+        background: #f8fafc;
+      }
+      tbody tr:hover {
+        background: #eef6ff;
+      }
+      /* Action buttons */
+      .btn-delete {
+        background: #ef4444;
+        border: none;
+        color: #fff;
+        padding: 8px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      .btn-delete:hover {
+        filter: brightness(0.95);
+      }
+      /* Loading spinner */
+      .loading {
+        text-align: center;
+        padding: 40px;
+        font-size: 18px;
+        color: #007bff;
+      }
+      .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #007bff;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 20px auto;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="topbar">
+      <div class="title">📦 Xin chào, Admin <span id="adminName"></span></div>
+      <a class="logout" href="#" onclick="logout()">Đăng xuất</a>
+    </div>
 
-  <h2>📚 Xin chào Admin {{ admin }} - Quản lý phiếu mượn</h2>
-  <a href="/logout" style="background:#dc3545;padding:10px 15px;border-radius:8px;">🚪 Đăng xuất</a>
-  <a href="http://127.0.0.1:5000/admin" style="background:#6c757d;padding:10px 15px;border-radius:8px;">⬅ Quay lại Trang quản trị</a>
+    <div class="wrapper">
+      <div class="card">
+        <h2>📋 Danh sách phiếu mượn</h2>
 
-  <table>
-    <tr>
-      <th>ID</th><th>Tên người mượn</th><th>Tựa sách</th><th>Số lượng</th>
-      <th>Ngày mượn</th><th>Ngày trả</th><th>Thao tác</th>
-    </tr>
-    {% for b in borrows %}
-    <tr>
-      <td>{{ b.borrow_id }}</td>
-      <td>{{ b.username }}</td>
-      <td>{{ b.book_title }}</td>
-      <td>{{ b.quantity }}</td>
-      <td>{{ b.borrow_date.strftime("%Y-%m-%d") }}</td>
-      <td>{{ b.return_date.strftime("%Y-%m-%d") }}</td>
-      <td>
-        <button onclick="deleteBorrow('{{ b.borrow_id }}')">🗑️ Xóa</button>
-      </td>
-    </tr>
-    {% endfor %}
-  </table>
+        <!-- Loading indicator -->
+        <div id="loading" class="loading" style="display: none">
+          <div class="spinner"></div>
+          <p>Đang tải dữ liệu...</p>
+        </div>
 
-  <script>
-  async function deleteBorrow(id) {
-    if (!confirm("Bạn có chắc muốn xóa phiếu mượn #" + id + "?")) return;
-    await fetch(`/borrows/${id}`, { method: "DELETE" });
-    location.reload();
-  }
-  </script>
+        <!-- Table -->
+        <table id="borrowTable" style="display: none">
+          <thead>
+            <tr>
+              <th style="width: 80px">ID</th>
+              <th>Người mượn</th>
+              <th>Sách</th>
+              <th style="width: 110px">Số lượng</th>
+              <th style="width: 150px">Ngày mượn</th>
+              <th style="width: 150px">Ngày trả</th>
+              <th style="width: 90px">Xóa</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Sẽ được load bằng JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-</body>
+    <script>
+      const token = localStorage.getItem("token");
+      const username = localStorage.getItem("username");
+      document.getElementById("adminName").textContent = username || "";
+
+      async function loadBorrows() {
+        // Show loading
+        document.getElementById("loading").style.display = "block";
+        document.getElementById("borrowTable").style.display = "none";
+
+        try {
+          const res = await fetch("/borrow-api/list", {
+            headers: { Authorization: "Bearer " + token },
+          });
+
+          if (!res.ok) {
+            throw new Error("Token hết hạn hoặc không hợp lệ");
+          }
+
+          const data = await res.json();
+          const tbody = document.querySelector("#borrowTable tbody");
+          tbody.innerHTML = "";
+
+          data.forEach((b) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${b.borrow_id}</td>
+              <td>${b.username}</td>
+              <td>${b.book_title}</td>
+              <td>${b.quantity}</td>
+              <td>${new Date(b.borrow_date).toLocaleDateString()}</td>
+              <td>${new Date(b.return_date).toLocaleDateString()}</td>
+              <td><button class="btn-delete" onclick="deleteBorrow(${
+                b.borrow_id
+              })">🗑️ Xóa</button></td>
+            `;
+            tbody.appendChild(row);
+          });
+
+          // Hide loading and show table
+          document.getElementById("loading").style.display = "none";
+          document.getElementById("borrowTable").style.display = "table";
+        } catch (error) {
+          document.getElementById("loading").style.display = "none";
+          alert(error.message);
+          window.location.href = "/auth/login";
+        }
+      }
+
+      async function deleteBorrow(id) {
+        if (!confirm("Bạn chắc chắn muốn xóa phiếu mượn này?")) return;
+
+        const btn = event.target;
+        const originalText = btn.textContent;
+        btn.textContent = "⏳ Đang xóa...";
+        btn.disabled = true;
+
+        try {
+          const res = await fetch(`/borrow-api/${id}`, {
+            method: "DELETE",
+            headers: { Authorization: "Bearer " + token },
+          });
+
+          if (res.ok) {
+            alert("✅ Đã xóa phiếu mượn");
+            loadBorrows();
+          } else {
+            const err = await res.json();
+            alert("❌ Lỗi: " + err.error);
+          }
+        } catch (error) {
+          alert("❌ Lỗi: " + error.message);
+        } finally {
+          btn.textContent = originalText;
+          btn.disabled = false;
+        }
+      }
+
+      function logout() {
+        localStorage.clear();
+        window.location.href = "/auth/login";
+      }
+
+      loadBorrows();
+    </script>
+  </body>
 </html>

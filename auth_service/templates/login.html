@@ -2,83 +2,66 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Đăng nhập</title>
+  <title>Đăng nhập hệ thống</title>
   <style>
     body {
       font-family: "Segoe UI", sans-serif;
       background: linear-gradient(135deg, #2980b9, #6dd5fa);
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      height: 100vh; display: flex; justify-content: center; align-items: center;
     }
-
     .container {
-      background: white;
-      padding: 40px;
-      border-radius: 15px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-      width: 350px;
-      text-align: center;
+      background: white; padding: 40px; border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2); width: 350px; text-align: center;
     }
-
-    h2 {
-      color: #2980b9;
-      margin-bottom: 20px;
-    }
-
+    h2 { color: #2980b9; margin-bottom: 20px; }
     input {
-      width: 85%;
-      padding: 10px;
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 15px;
+      width: 90%; padding: 12px; margin: 10px 0;
+      border: 1px solid #ccc; border-radius: 8px; font-size: 15px;
     }
-
     button {
-      width: 90%;
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      background-color: #2980b9;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background 0.3s;
+      width: 95%; padding: 12px; border: none; border-radius: 8px;
+      background-color: #2980b9; color: white; font-size: 16px;
+      cursor: pointer; transition: background 0.3s;
     }
-
-    button:hover {
-      background-color: #21618c;
-    }
-
-    .msg {
-      color: red;
-      margin-top: 10px;
-    }
-
-    a {
-      color: #2980b9;
-      text-decoration: none;
-    }
-
-    a:hover {
-      text-decoration: underline;
-    }
+    button:hover { background-color: #21618c; }
+    a { color: #2980b9; text-decoration: none; }
+    a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>Đăng nhập hệ thống</h2>
-    <form method="POST">
+    <form onsubmit="submitLogin(event)">
       <input type="text" name="username" placeholder="Tên đăng nhập" required><br>
       <input type="password" name="password" placeholder="Mật khẩu" required><br>
       <button type="submit">Đăng nhập</button>
     </form>
-    {% if msg %}
-      <p class="msg">{{ msg }}</p>
-    {% endif %}
-    <p>Chưa có tài khoản? <a href="/register">Đăng ký ngay</a></p>
+    <p>Chưa có tài khoản? <a href="/auth/register">Đăng ký ngay</a></p>
   </div>
+
+<script>
+async function submitLogin(e) {
+  e.preventDefault();
+  const form = e.target;
+  const body = { username: form.username.value, password: form.password.value };
+  const res = await fetch('/auth/login', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(body)
+  });
+  const data = await res.json();
+  if (!res.ok) { alert(data.error || 'Đăng nhập thất bại'); return; }
+
+  localStorage.setItem('token', data.token);
+  localStorage.setItem('username', data.username);
+  localStorage.setItem('role', data.role);
+
+  if (data.role === "admin") {
+    window.location.href = "/admin";
+  } else {
+    window.location.href = "/borrow";
+  }
+}
+</script>
 </body>
 </html>

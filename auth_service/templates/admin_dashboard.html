@@ -1,126 +1,198 @@
 <!DOCTYPE html>
 <html lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <title>Trang Quản Trị Hệ Thống</title>
-  <style>
-    /* Tổng thể */
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', Tahoma, sans-serif;
-      background-color: #f0f2f5;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <title>Trang Quản Trị Hệ Thống</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: "Segoe UI", sans-serif;
+        background: linear-gradient(180deg, #f7faff 0%, #f4f6f9 100%);
+      }
+      header {
+        background: linear-gradient(135deg, #2563eb, #00c3ff);
+        color: white;
+        padding: 28px 20px 22px;
+        text-align: center;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+      }
+      header h1 {
+        margin: 0;
+        font-size: 28px;
+        letter-spacing: 0.3px;
+      }
+      header p {
+        margin: 8px 0 0;
+        font-size: 15px;
+        opacity: 0.95;
+      }
+      .topbar {
+        width: 92%;
+        max-width: 1100px;
+        margin: 16px auto 0;
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+      }
+      .chip {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: saturate(180%) blur(8px);
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        border-radius: 999px;
+        padding: 8px 14px;
+        font-size: 13px;
+        color: #0f172a;
+        text-decoration: none;
+        transition: transform 0.15s ease, box-shadow 0.2s ease;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+      }
+      .chip:hover {
+        transform: translateY(-1px);
+      }
+      .container {
+        width: 92%;
+        max-width: 1100px;
+        margin: 28px auto 32px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 22px;
+      }
+      .card {
+        background: #ffffff;
+        border-radius: 14px;
+        padding: 24px;
+        text-align: left;
+        box-shadow: 0 10px 24px rgba(2, 6, 23, 0.06);
+        border: 1px solid rgba(2, 6, 23, 0.06);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 32px rgba(2, 6, 23, 0.12);
+      }
+      .card h3 {
+        margin: 0 0 6px;
+        font-size: 18px;
+        color: #0f172a;
+      }
+      .card p {
+        margin: 0;
+        color: #475569;
+        font-size: 14px;
+      }
+      .card .actions {
+        margin-top: 16px;
+        display: flex;
+        gap: 10px;
+      }
+      .btn {
+        display: inline-block;
+        padding: 10px 14px;
+        border: none;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        color: white;
+        background: #2563eb;
+        transition: filter 0.2s ease, transform 0.1s ease;
+      }
+      .btn.secondary {
+        background: #0ea5e9;
+      }
+      .btn:hover {
+        filter: brightness(0.95);
+      }
+      .btn:active {
+        transform: translateY(1px);
+      }
+      .logout {
+        background: #ef4444 !important;
+      }
+      .logout:hover {
+        filter: brightness(0.95) !important;
+      }
+      .footer {
+        width: 92%;
+        max-width: 1100px;
+        margin: 8px auto 26px;
+        color: #6b7280;
+        font-size: 13px;
+        text-align: center;
+      }
+      .emoji {
+        font-size: 18px;
+        margin-right: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Trang Quản Trị Hệ Thống</h1>
+      <p>
+        Xin chào, <strong id="adminName"></strong> 👋 Chúc bạn một ngày hiệu
+        quả!
+      </p>
+      <div class="topbar">
+        <a class="chip" href="#" onclick="logout()">🚪 Đăng xuất</a>
+      </div>
+    </header>
 
-    /* Thanh tiêu đề */
-    header {
-      background: linear-gradient(135deg, #007bff, #00c3ff);
-      color: white;
-      padding: 20px 0;
-      text-align: center;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
+    <div class="container">
+      <div class="card">
+        <h3><span class="emoji">👥</span>Quản lý người dùng</h3>
+        <p>Xem, thêm, sửa, xóa tài khoản người dùng trong hệ thống.</p>
+        <div class="actions">
+          <a class="btn" href="/user/">Mở trang quản lý</a>
+        </div>
+      </div>
+      <div class="card">
+        <h3><span class="emoji">📚</span>Quản lý sách</h3>
+        <p>Thêm mới, chỉnh sửa và quản lý danh mục đầu sách.</p>
+        <div class="actions">
+          <a class="btn" href="/book/">Mở trang quản lý</a>
+        </div>
+      </div>
+      <div class="card">
+        <h3><span class="emoji">📦</span>Quản lý mượn trả</h3>
+        <p>Theo dõi, cập nhật trạng thái phiếu mượn và trả sách.</p>
+        <div class="actions">
+          <a class="btn" href="/borrow-admin">Mở trang quản lý</a>
+        </div>
+      </div>
 
-    header h1 {
-      margin: 0;
-      font-size: 28px;
-      letter-spacing: 0.5px;
-    }
+    </div>
 
-    header p {
-      margin: 5px 0 0;
-      font-size: 16px;
-      opacity: 0.9;
-    }
+    <div class="footer">
+      © 2025 Hệ thống quản lý thư viện SOA · Admin Dashboard
+    </div>
 
-    /* Container chính */
-    .container {
-      width: 80%;
-      max-width: 800px;
-      margin: 40px auto;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-      padding: 30px;
-      text-align: center;
-      transition: transform 0.2s ease;
-    }
+    <script>
+      async function loadAdmin() {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          window.location.href = "/auth/login";
+          return;
+        }
+        const res = await fetch("/admin-api", {
+          headers: { Authorization: "Bearer " + token },
+        });
+        if (!res.ok) {
+          alert("Token hết hạn hoặc không hợp lệ");
+          window.location.href = "/auth/login";
+          return;
+        }
+        const data = await res.json();
+        document.getElementById("adminName").textContent = data.admin;
+      }
 
-    .container:hover {
-      transform: translateY(-3px);
-    }
+      function logout() {
+        localStorage.clear();
+        window.location.href = "/auth/login";
+      }
 
-    /* Menu button */
-    .btn {
-      display: block;
-      width: 100%;
-      padding: 14px;
-      margin: 12px 0;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: bold;
-      font-size: 16px;
-      transition: all 0.3s ease;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-
-    .btn:hover {
-      background: #0056b3;
-      transform: translateY(-2px);
-    }
-
-    /* Logout */
-    .logout {
-      background: #dc3545;
-    }
-
-    .logout:hover {
-      background: #b02a37;
-    }
-
-    footer {
-      text-align: center;
-      color: #777;
-      margin-top: 50px;
-      font-size: 14px;
-    }
-  </style>
-</head>
-<body>
-
-  <!-- Header -->
-  <header>
-    <h1>Trang Quản Trị Hệ Thống</h1>
-    <p>Xin chào, <strong>{{ admin }}</strong> 👋</p>
-  </header>
-
-  <!-- Nội dung chính -->
-  <div class="container">
-    <h2>Chọn tác vụ quản lý</h2>
-
-    <!-- ✅ Liên kết các service -->
-    <a class="btn" href="http://127.0.0.1:5001/?token={{ token }}&username={{ admin }}">
-      👥 Quản lý người dùng
-    </a>
-
-    <a class="btn" href="http://127.0.0.1:5002/admin?token={{ token }}&username={{ admin }}">📚 Quản lý sách</a>
-
-
-    <a class="btn" href="http://127.0.0.1:5003/admin?token={{ token }}&username={{ admin }}">
-      📦 Quản lý mượn trả (TODO)
-    </a>
-
-    <!-- Logout -->
-    <a class="btn logout" href="/logout">
-      🚪 Đăng xuất
-    </a>
-  </div>
-
-  <footer>
-    © 2025 Hệ thống quản lý thư viện SOA | Phiên bản Admin Dashboard
-  </footer>
-
-</body>
+      loadAdmin();
+    </script>
+  </body>
 </html>
