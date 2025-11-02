@@ -2,147 +2,247 @@
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
-    <title>Quản lý người dùng</title>
+    <title>📋 Quản lý người dùng</title>
     <style>
-      body {
-        font-family: "Segoe UI", Arial, sans-serif;
-        background: #f4f6f8;
+      * {
         margin: 0;
         padding: 0;
+        box-sizing: border-box;
       }
-
-      header {
-        background: linear-gradient(135deg, #007bff, #00c3ff);
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: #f4f6f9;
+      }
+      
+      /* Header */
+      .topbar {
+        background: linear-gradient(135deg, #1e90ff, #00c3ff);
         color: white;
-        padding: 15px 40px;
+        padding: 20px 40px;
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        justify-content: space-between;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
       }
-
-      header h2 {
-        margin: 0;
+      .topbar .title {
+        font-size: 20px;
+        font-weight: 600;
       }
-
-      header button {
+      .logout {
+        padding: 10px 20px;
         background: #dc3545;
         color: white;
         border: none;
-        padding: 8px 16px;
-        border-radius: 6px;
+        border-radius: 8px;
         font-weight: bold;
         cursor: pointer;
         transition: 0.3s;
       }
-
-      header button:hover {
+      .logout:hover {
         background: #b02a37;
       }
 
-      main {
-        width: 90%;
-        max-width: 1000px;
+      /* Content */
+      .wrapper {
+        max-width: 1400px;
         margin: 30px auto;
-        background: #fff;
-        border-radius: 10px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-        padding: 20px 30px;
+        padding: 0 20px 40px;
       }
-
-      h3 {
-        text-align: center;
-        color: #333;
+      .card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(2, 6, 23, 0.06);
+        padding: 30px;
       }
-
-      form {
+      .card h2 {
+        margin: 0 0 20px;
+        font-size: 22px;
+        color: #0f172a;
         display: flex;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        margin-bottom: 25px;
-        gap: 10px;
+        align-items: center;
+        gap: 8px;
       }
 
-      form input,
-      form select {
-        flex: 1;
-        padding: 10px;
-        border: 1px solid #ccc;
+      /* Stats */
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+      .stat-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      }
+      .stat-card.green {
+        background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+      }
+      .stat-card.orange {
+        background: linear-gradient(135deg, #f2994a 0%, #f2c94c 100%);
+      }
+      .stat-card h3 {
+        font-size: 14px;
+        font-weight: 500;
+        opacity: 0.9;
+        margin-bottom: 8px;
+      }
+      .stat-card .number {
+        font-size: 32px;
+        font-weight: 700;
+      }
+
+      /* Form thêm user */
+      .add-form {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+        border: 2px dashed #dee2e6;
+      }
+      .add-form h3 {
+        margin-bottom: 15px;
+        color: #495057;
+        font-size: 16px;
+      }
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+        margin-bottom: 15px;
+      }
+      .form-grid input,
+      .form-grid select {
+        padding: 10px 12px;
+        border: 1px solid #ced4da;
         border-radius: 6px;
         font-size: 14px;
+        transition: border-color 0.3s;
       }
-
-      form button {
+      .form-grid input:focus,
+      .form-grid select:focus {
+        outline: none;
+        border-color: #007bff;
+      }
+      .btn-add {
         background: #007bff;
         color: white;
         border: none;
+        padding: 10px 24px;
         border-radius: 6px;
-        padding: 10px 20px;
-        font-weight: bold;
+        font-weight: 600;
         cursor: pointer;
         transition: 0.3s;
       }
-
-      form button:hover {
+      .btn-add:hover {
         background: #0056b3;
       }
+      .btn-add:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
 
+      /* Search bar */
+      .search-bar {
+        margin-bottom: 20px;
+        display: flex;
+        gap: 10px;
+      }
+      .search-bar input {
+        flex: 1;
+        padding: 12px 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 14px;
+      }
+      .search-bar select {
+        padding: 12px 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 14px;
+        min-width: 150px;
+      }
+
+      /* Table */
       table {
         width: 100%;
         border-collapse: collapse;
-        margin-top: 15px;
+        border-radius: 10px;
+        overflow: hidden;
       }
-
-      th,
-      td {
-        padding: 12px;
-        text-align: center;
-        border-bottom: 1px solid #ddd;
-      }
-
-      th {
-        background: #007bff;
+      thead th {
+        background: #0d6efd;
         color: white;
+        text-align: left;
+        padding: 12px 14px;
+        font-weight: 600;
+      }
+      tbody td {
+        padding: 12px 14px;
+        border-bottom: 1px solid #e9ecef;
+      }
+      tbody tr:hover {
+        background: #f8f9fa;
+      }
+      tbody input,
+      tbody select {
+        width: 100%;
+        padding: 6px 8px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 13px;
       }
 
-      tr:hover {
-        background: #f1f7ff;
-      }
-
-      button.action {
+      /* Buttons */
+      .btn-action {
         background: #28a745;
-        color: white;
         border: none;
+        color: white;
         padding: 6px 12px;
-        border-radius: 5px;
+        border-radius: 6px;
         cursor: pointer;
+        font-weight: 600;
+        font-size: 13px;
         transition: 0.3s;
       }
-
-      button.action:hover {
-        background: #1e7e34;
+      .btn-action:hover {
+        background: #218838;
       }
-
-      button.delete {
+      .btn-action:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+      .btn-delete {
         background: #dc3545;
       }
-
-      button.delete:hover {
-        background: #b02a37;
+      .btn-delete:hover {
+        background: #c82333;
       }
 
-      footer {
-        text-align: center;
-        color: #777;
-        margin-top: 40px;
-        font-size: 14px;
+      /* Role badge */
+      .role-badge {
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+      }
+      .role-badge.admin {
+        background: #fff3cd;
+        color: #856404;
+      }
+      .role-badge.user {
+        background: #d1ecf1;
+        color: #0c5460;
       }
 
-      /* Loading spinner */
+      /* Loading */
       .loading {
         text-align: center;
-        padding: 40px;
-        font-size: 18px;
+        padding: 60px;
         color: #007bff;
       }
       .spinner {
@@ -155,74 +255,115 @@
         margin: 20px auto;
       }
       @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      /* Footer */
+      footer {
+        text-align: center;
+        color: #6c757d;
+        padding: 20px;
+        font-size: 14px;
       }
     </style>
   </head>
   <body>
     <!-- Header -->
-    <header>
-      <h2>Xin chào, Admin <span id="adminName"></span> 👑</h2>
+    <div class="topbar">
+      <div class="title">👤 Xin chào, Admin <span id="adminName"></span></div>
+      <button class="logout" onclick="logout()">Đăng xuất</button>
+    </div>
 
-      <button onclick="logout()">Đăng xuất</button>
-    </header>
+    <!-- Main Content -->
+    <div class="wrapper">
+      <div class="card">
+        <h2>📋 Quản lý người dùng</h2>
 
-    <!-- Main -->
-    <main>
-      <h3>📋 Danh sách người dùng</h3>
+        <!-- Stats -->
+        <div class="stats">
+          <div class="stat-card">
+            <h3>Tổng người dùng</h3>
+            <div class="number" id="totalUsers">0</div>
+          </div>
+          <div class="stat-card green">
+            <h3>User thường</h3>
+            <div class="number" id="totalNormalUsers">0</div>
+          </div>
+          <div class="stat-card orange">
+            <h3>Admin</h3>
+            <div class="number" id="totalAdmins">0</div>
+          </div>
+        </div>
 
-      <!-- Form thêm người dùng -->
-      <form onsubmit="return addUser(event)">
-        <input type="text" id="name" placeholder="Họ tên" required />
-        <input type="text" id="username" placeholder="Username" required />
-        <input type="password" id="password" placeholder="Mật khẩu" required />
-        <input type="number" id="age" placeholder="Tuổi" required />
-        <input type="text" id="address" placeholder="Địa chỉ" />
-        <select id="role">
-          <option value="user">User</option>
-          <option value="admin">Admin</option>
-        </select>
-        <button type="submit">➕ Thêm</button>
-      </form>
+        <!-- Form thêm người dùng -->
+        <div class="add-form">
+          <h3>➕ Thêm người dùng mới</h3>
+          <form onsubmit="return addUser(event)">
+            <div class="form-grid">
+              <input type="text" id="name" placeholder="Họ tên *" required />
+              <input type="text" id="username" placeholder="Username *" required />
+              <input type="password" id="password" placeholder="Mật khẩu *" required />
+              <input type="number" id="age" placeholder="Tuổi *" required min="1" />
+              <input type="text" id="address" placeholder="Địa chỉ" />
+              <select id="role">
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+            <button type="submit" class="btn-add">➕ Thêm người dùng</button>
+          </form>
+        </div>
 
-      <!-- Loading indicator -->
-      <div id="loading" class="loading" style="display: none">
-        <div class="spinner"></div>
-        <p>Đang tải dữ liệu...</p>
+        <!-- Search & Filter -->
+        <div class="search-bar">
+          <input 
+            type="text" 
+            id="searchInput" 
+            placeholder="🔍 Tìm theo tên, username hoặc địa chỉ..." 
+            oninput="filterUsers()"
+          />
+          <select id="filterRole" onchange="filterUsers()">
+            <option value="all">Tất cả vai trò</option>
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+
+        <!-- Loading -->
+        <div id="loading" class="loading" style="display: none">
+          <div class="spinner"></div>
+          <p>Đang tải dữ liệu...</p>
+        </div>
+
+        <!-- Table -->
+        <table id="usersTable" style="display: none">
+          <thead>
+            <tr>
+              <th style="width: 60px">ID</th>
+              <th>Họ tên</th>
+              <th>Username</th>
+              <th style="width: 80px">Tuổi</th>
+              <th>Địa chỉ</th>
+              <th style="width: 100px">Vai trò</th>
+              <th style="width: 100px">Cập nhật</th>
+              <th style="width: 90px">Xóa</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Dữ liệu sẽ được load bằng JavaScript -->
+          </tbody>
+        </table>
       </div>
-
-      <!-- Bảng danh sách -->
-      <table id="usersTable" style="display: none">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Họ tên</th>
-            <th>Username</th>
-            <th>Tuổi</th>
-            <th>Địa chỉ</th>
-            <th>Role</th>
-            <th>Cập nhật</th>
-            <th>Xóa</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Sẽ được load bằng JavaScript -->
-        </tbody>
-      </table>
-    </main>
+    </div>
 
     <footer>© 2025 Hệ thống quản trị người dùng | SOA Flask + MongoDB</footer>
 
-    <!-- JavaScript CRUD -->
     <script>
-      // Load users when page loads
+      let allUsers = [];
+
+      // Load users khi trang load
       async function loadUsers() {
-        // Show loading
         document.getElementById("loading").style.display = "block";
         document.getElementById("usersTable").style.display = "none";
 
@@ -238,10 +379,14 @@
             throw new Error("Không thể tải danh sách người dùng");
           }
 
-          const users = await response.json();
-          displayUsers(users);
+          allUsers = await response.json();
+          
+          // Update stats
+          updateStats();
+          
+          // Display users
+          displayUsers(allUsers);
 
-          // Hide loading and show table
           document.getElementById("loading").style.display = "none";
           document.getElementById("usersTable").style.display = "table";
         } catch (error) {
@@ -252,45 +397,64 @@
         }
       }
 
+      function updateStats() {
+        const totalUsers = allUsers.length;
+        const totalAdmins = allUsers.filter(u => u.role === 'admin').length;
+        const totalNormalUsers = allUsers.filter(u => u.role === 'user').length;
+
+        document.getElementById("totalUsers").textContent = totalUsers;
+        document.getElementById("totalAdmins").textContent = totalAdmins;
+        document.getElementById("totalNormalUsers").textContent = totalNormalUsers;
+      }
+
       function displayUsers(users) {
-        const tbody = document.querySelector("table tbody");
+        const tbody = document.querySelector("#usersTable tbody");
         if (!tbody) return;
 
         tbody.innerHTML = "";
 
+        if (users.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: #999;">Không tìm thấy người dùng nào</td></tr>';
+          return;
+        }
+
         users.forEach((user) => {
           const row = document.createElement("tr");
           row.innerHTML = `
-        <td>${user.id || ""}</td>
-        <td><input type="text" id="name_${user.username}" value="${
-            user.name || ""
-          }"></td>
-        <td>${user.username}</td>
-        <td><input type="number" id="age_${user.username}" value="${
-            user.age || 0
-          }"></td>
-        <td><input type="text" id="address_${user.username}" value="${
-            user.address || ""
-          }"></td>
-        <td>
-          <select id="role_${user.username}">
-            <option value="user" ${
-              user.role === "user" ? "selected" : ""
-            }>User</option>
-            <option value="admin" ${
-              user.role === "admin" ? "selected" : ""
-            }>Admin</option>
-          </select>
-        </td>
-        <td><button class="action" onclick="updateUser('${
-          user.username
-        }')">💾 Lưu</button></td>
-        <td><button class="action delete" onclick="deleteUser('${
-          user.username
-        }')">🗑️ Xóa</button></td>
-      `;
+            <td>${user.id || ""}</td>
+            <td><input type="text" id="name_${user.username}" value="${user.name || ""}"></td>
+            <td><strong>${user.username}</strong></td>
+            <td><input type="number" id="age_${user.username}" value="${user.age || 0}" min="1"></td>
+            <td><input type="text" id="address_${user.username}" value="${user.address || ""}"></td>
+            <td>
+              <select id="role_${user.username}">
+                <option value="user" ${user.role === "user" ? "selected" : ""}>User</option>
+                <option value="admin" ${user.role === "admin" ? "selected" : ""}>Admin</option>
+              </select>
+            </td>
+            <td><button class="btn-action" onclick="updateUser('${user.username}')">💾 Lưu</button></td>
+            <td><button class="btn-action btn-delete" onclick="deleteUser('${user.username}')">🗑️ Xóa</button></td>
+          `;
           tbody.appendChild(row);
         });
+      }
+
+      function filterUsers() {
+        const search = document.getElementById("searchInput").value.toLowerCase();
+        const roleFilter = document.getElementById("filterRole").value;
+
+        let filtered = allUsers.filter(user => {
+          const matchSearch = 
+            (user.name || "").toLowerCase().includes(search) ||
+            (user.username || "").toLowerCase().includes(search) ||
+            (user.address || "").toLowerCase().includes(search);
+          
+          const matchRole = roleFilter === "all" || user.role === roleFilter;
+          
+          return matchSearch && matchRole;
+        });
+
+        displayUsers(filtered);
       }
 
       async function addUser(event) {
@@ -331,12 +495,13 @@
           document.getElementById("password").value = "";
           document.getElementById("age").value = "";
           document.getElementById("address").value = "";
+          document.getElementById("role").value = "user";
 
           // Reload users
-          loadUsers();
-          alert("Thêm người dùng thành công!");
+          await loadUsers();
+          alert("✅ Thêm người dùng thành công!");
         } catch (error) {
-          alert(error.message);
+          alert("❌ " + error.message);
         } finally {
           submitBtn.textContent = originalText;
           submitBtn.disabled = false;
@@ -372,9 +537,10 @@
             throw new Error(error.error || "Lỗi khi cập nhật người dùng");
           }
 
-          alert("Cập nhật thành công!");
+          await loadUsers();
+          alert("✅ Cập nhật thành công!");
         } catch (error) {
-          alert(error.message);
+          alert("❌ " + error.message);
         } finally {
           btn.textContent = originalText;
           btn.disabled = false;
@@ -403,10 +569,10 @@
             throw new Error(error.error || "Lỗi khi xóa người dùng");
           }
 
-          loadUsers();
-          alert("Xóa người dùng thành công!");
+          await loadUsers();
+          alert("✅ Xóa người dùng thành công!");
         } catch (error) {
-          alert(error.message);
+          alert("❌ " + error.message);
         } finally {
           btn.textContent = originalText;
           btn.disabled = false;
@@ -418,7 +584,7 @@
         window.location.href = "/auth/login";
       }
 
-      // Load admin name and users when page loads
+      // Load dữ liệu khi trang load
       document.addEventListener("DOMContentLoaded", function () {
         const username = localStorage.getItem("username");
         if (username) {

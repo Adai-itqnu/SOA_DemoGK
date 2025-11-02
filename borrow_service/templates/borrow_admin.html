@@ -2,59 +2,133 @@
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
-    <title>📦 Quản lý phiếu mượn</title>
+    <title>📦 Quản lý phiếu mượn - Admin</title>
     <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
       body {
         font-family: "Segoe UI", sans-serif;
         background: #f4f6f9;
-        margin: 0;
       }
-      /* Top header */
+      
+      /* Header */
       .topbar {
         background: linear-gradient(135deg, #1e90ff, #00c3ff);
-        color: #fff;
-        padding: 16px 22px;
+        color: white;
+        padding: 20px 40px;
         display: flex;
         align-items: center;
         justify-content: space-between;
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
       }
       .topbar .title {
-        font-size: 18px;
+        font-size: 20px;
         font-weight: 600;
       }
       .logout {
-        display: inline-block;
-        padding: 10px 14px;
+        padding: 10px 20px;
         background: #dc3545;
-        color: #fff;
+        color: white;
+        border: none;
         border-radius: 8px;
         text-decoration: none;
+        font-weight: bold;
+        cursor: pointer;
       }
       .logout:hover {
         background: #b02a37;
       }
-      /* Card container */
+
+      /* Tabs */
+      .tabs {
+        max-width: 1400px;
+        margin: 30px auto 0;
+        padding: 0 20px;
+        display: flex;
+        gap: 10px;
+      }
+      .tab {
+        padding: 12px 24px;
+        background: white;
+        border: none;
+        border-radius: 10px 10px 0 0;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 600;
+        color: #666;
+        transition: all 0.3s;
+      }
+      .tab.active {
+        background: white;
+        color: #007bff;
+        box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
+      }
+      .tab:hover {
+        color: #007bff;
+      }
+
+      /* Content */
       .wrapper {
-        max-width: 1160px;
-        margin: 26px auto;
-        padding: 0 16px;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 20px 40px;
       }
       .card {
-        background: #fff;
-        border-radius: 12px;
+        background: white;
+        border-radius: 0 10px 10px 10px;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-        border: 1px solid rgba(2, 6, 23, 0.06);
-        padding: 20px;
+        padding: 30px;
       }
+      .tab-content {
+        display: none;
+      }
+      .tab-content.active {
+        display: block;
+      }
+      
       .card h2 {
-        margin: 0 0 14px;
-        font-size: 20px;
+        margin: 0 0 20px;
+        font-size: 22px;
         color: #0f172a;
-        display: flex;
-        align-items: center;
-        gap: 8px;
       }
+
+      /* Stats */
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+      .stat-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      }
+      .stat-card.green {
+        background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+      }
+      .stat-card.orange {
+        background: linear-gradient(135deg, #f2994a 0%, #f2c94c 100%);
+      }
+      .stat-card.red {
+        background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+      }
+      .stat-card h3 {
+        font-size: 14px;
+        font-weight: 500;
+        opacity: 0.9;
+        margin-bottom: 8px;
+      }
+      .stat-card .number {
+        font-size: 32px;
+        font-weight: 700;
+      }
+
       /* Table */
       table {
         width: 100%;
@@ -64,37 +138,62 @@
       }
       thead th {
         background: #0d6efd;
-        color: #fff;
+        color: white;
         text-align: left;
         padding: 12px 14px;
+        font-weight: 600;
       }
       tbody td {
-        padding: 10px 14px;
-        background: #fff;
-      }
-      tbody tr:nth-child(even) {
-        background: #f8fafc;
+        padding: 12px 14px;
+        border-bottom: 1px solid #e9ecef;
       }
       tbody tr:hover {
-        background: #eef6ff;
+        background: #f8f9fa;
       }
-      /* Action buttons */
+
+      /* Buttons */
       .btn-delete {
         background: #ef4444;
         border: none;
-        color: #fff;
-        padding: 8px 12px;
-        border-radius: 8px;
+        color: white;
+        padding: 8px 14px;
+        border-radius: 6px;
         cursor: pointer;
+        font-weight: 600;
       }
       .btn-delete:hover {
-        filter: brightness(0.95);
+        background: #dc2626;
       }
-      /* Loading spinner */
+      .btn-delete:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+
+      /* Status badges */
+      .status {
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+      }
+      .status.borrowing {
+        background: #fff3cd;
+        color: #856404;
+      }
+      .status.overdue {
+        background: #f8d7da;
+        color: #721c24;
+      }
+      .status.returned {
+        background: #d4edda;
+        color: #155724;
+      }
+
+      /* Loading */
       .loading {
         text-align: center;
-        padding: 40px;
-        font-size: 18px;
+        padding: 60px;
         color: #007bff;
       }
       .spinner {
@@ -107,12 +206,29 @@
         margin: 20px auto;
       }
       @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      /* Search bar */
+      .search-bar {
+        margin-bottom: 20px;
+        display: flex;
+        gap: 10px;
+      }
+      .search-bar input {
+        flex: 1;
+        padding: 10px 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 14px;
+      }
+      .search-bar select {
+        padding: 10px 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 14px;
+        min-width: 150px;
       }
     </style>
   </head>
@@ -122,33 +238,100 @@
       <a class="logout" href="#" onclick="logout()">Đăng xuất</a>
     </div>
 
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab(0)">📋 Đang mượn</button>
+      <button class="tab" onclick="switchTab(1)">📜 Lịch sử mượn trả</button>
+    </div>
+
     <div class="wrapper">
-      <div class="card">
-        <h2>📋 Danh sách phiếu mượn</h2>
+      <!-- Tab 1: Phiếu đang mượn -->
+      <div class="tab-content active">
+        <div class="card">
+          <h2>📋 Phiếu mượn đang hoạt động</h2>
+          
+          <div class="stats">
+            <div class="stat-card">
+              <h3>Tổng phiếu mượn</h3>
+              <div class="number" id="totalBorrows">0</div>
+            </div>
+            <div class="stat-card green">
+              <h3>Đang mượn</h3>
+              <div class="number" id="activeBorrows">0</div>
+            </div>
+            <div class="stat-card red">
+              <h3>Quá hạn</h3>
+              <div class="number" id="overdueBorrows">0</div>
+            </div>
+          </div>
 
-        <!-- Loading indicator -->
-        <div id="loading" class="loading" style="display: none">
-          <div class="spinner"></div>
-          <p>Đang tải dữ liệu...</p>
+          <div class="search-bar">
+            <input type="text" id="searchActive" placeholder="🔍 Tìm theo người dùng hoặc tên sách..." oninput="filterActiveBorrows()">
+            <select id="filterStatusActive" onchange="filterActiveBorrows()">
+              <option value="all">Tất cả trạng thái</option>
+              <option value="borrowing">Đang mượn</option>
+              <option value="overdue">Quá hạn</option>
+            </select>
+          </div>
+
+          <div id="loading1" class="loading" style="display: none">
+            <div class="spinner"></div>
+            <p>Đang tải dữ liệu...</p>
+          </div>
+
+          <table id="borrowTable" style="display: none">
+            <thead>
+              <tr>
+                <th style="width: 80px">ID</th>
+                <th>Người mượn</th>
+                <th>Sách</th>
+                <th style="width: 100px">Số lượng</th>
+                <th style="width: 140px">Ngày mượn</th>
+                <th style="width: 140px">Ngày trả dự kiến</th>
+                <th style="width: 120px">Trạng thái</th>
+                <th style="width: 100px">Xóa</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
         </div>
+      </div>
 
-        <!-- Table -->
-        <table id="borrowTable" style="display: none">
-          <thead>
-            <tr>
-              <th style="width: 80px">ID</th>
-              <th>Người mượn</th>
-              <th>Sách</th>
-              <th style="width: 110px">Số lượng</th>
-              <th style="width: 150px">Ngày mượn</th>
-              <th style="width: 150px">Ngày trả</th>
-              <th style="width: 90px">Xóa</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Sẽ được load bằng JavaScript -->
-          </tbody>
-        </table>
+      <!-- Tab 2: Lịch sử -->
+      <div class="tab-content">
+        <div class="card">
+          <h2>📜 Lịch sử mượn trả đầy đủ</h2>
+          
+          <div class="search-bar">
+            <input type="text" id="searchHistory" placeholder="🔍 Tìm theo người dùng hoặc tên sách..." oninput="filterHistory()">
+            <select id="filterStatusHistory" onchange="filterHistory()">
+              <option value="all">Tất cả trạng thái</option>
+              <option value="borrowing">Đang mượn</option>
+              <option value="returned">Đã trả</option>
+              <option value="overdue">Quá hạn</option>
+            </select>
+          </div>
+
+          <div id="loading2" class="loading" style="display: none">
+            <div class="spinner"></div>
+            <p>Đang tải dữ liệu...</p>
+          </div>
+
+          <table id="historyTable" style="display: none">
+            <thead>
+              <tr>
+                <th style="width: 80px">ID</th>
+                <th>Người mượn</th>
+                <th>Sách</th>
+                <th style="width: 100px">Số lượng</th>
+                <th style="width: 140px">Ngày mượn</th>
+                <th style="width: 140px">Ngày trả dự kiến</th>
+                <th style="width: 140px">Ngày trả thực tế</th>
+                <th style="width: 120px">Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -157,9 +340,31 @@
       const username = localStorage.getItem("username");
       document.getElementById("adminName").textContent = username || "";
 
-      async function loadBorrows() {
-        // Show loading
-        document.getElementById("loading").style.display = "block";
+      let allActiveBorrows = [];
+      let allHistory = [];
+
+      // Switch tabs
+      function switchTab(index) {
+        const tabs = document.querySelectorAll(".tab");
+        const contents = document.querySelectorAll(".tab-content");
+        
+        tabs.forEach((tab, i) => {
+          if (i === index) {
+            tab.classList.add("active");
+            contents[i].classList.add("active");
+          } else {
+            tab.classList.remove("active");
+            contents[i].classList.remove("active");
+          }
+        });
+
+        if (index === 0) loadActiveBorrows();
+        if (index === 1) loadHistory();
+      }
+
+      // Load phiếu đang mượn
+      async function loadActiveBorrows() {
+        document.getElementById("loading1").style.display = "block";
         document.getElementById("borrowTable").style.display = "none";
 
         try {
@@ -167,38 +372,177 @@
             headers: { Authorization: "Bearer " + token },
           });
 
-          if (!res.ok) {
-            throw new Error("Token hết hạn hoặc không hợp lệ");
-          }
+          if (!res.ok) throw new Error("Token hết hạn hoặc không hợp lệ");
 
           const data = await res.json();
-          const tbody = document.querySelector("#borrowTable tbody");
-          tbody.innerHTML = "";
+          allActiveBorrows = data.filter(b => b.status !== 'returned');
+          
+          // Update stats
+          const now = new Date();
+          const overdue = allActiveBorrows.filter(b => new Date(b.return_date) < now).length;
+          document.getElementById("totalBorrows").textContent = allActiveBorrows.length;
+          document.getElementById("activeBorrows").textContent = allActiveBorrows.length - overdue;
+          document.getElementById("overdueBorrows").textContent = overdue;
 
-          data.forEach((b) => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-              <td>${b.borrow_id}</td>
-              <td>${b.username}</td>
-              <td>${b.book_title}</td>
-              <td>${b.quantity}</td>
-              <td>${new Date(b.borrow_date).toLocaleDateString()}</td>
-              <td>${new Date(b.return_date).toLocaleDateString()}</td>
-              <td><button class="btn-delete" onclick="deleteBorrow(${
-                b.borrow_id
-              })">🗑️ Xóa</button></td>
-            `;
-            tbody.appendChild(row);
-          });
-
-          // Hide loading and show table
-          document.getElementById("loading").style.display = "none";
+          displayActiveBorrows(allActiveBorrows);
+          
+          document.getElementById("loading1").style.display = "none";
           document.getElementById("borrowTable").style.display = "table";
         } catch (error) {
-          document.getElementById("loading").style.display = "none";
+          document.getElementById("loading1").style.display = "none";
           alert(error.message);
           window.location.href = "/auth/login";
         }
+      }
+
+      function displayActiveBorrows(data) {
+        const tbody = document.querySelector("#borrowTable tbody");
+        tbody.innerHTML = "";
+
+        if (data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: #999;">Không có phiếu mượn nào</td></tr>';
+          return;
+        }
+
+        data.forEach((b) => {
+          const borrowDate = new Date(b.borrow_date);
+          const returnDate = new Date(b.return_date);
+          const now = new Date();
+          
+          let status = 'borrowing';
+          let statusText = 'Đang mượn';
+          
+          if (now > returnDate) {
+            status = 'overdue';
+            statusText = 'Quá hạn';
+          }
+
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${b.borrow_id}</td>
+            <td>${b.username}</td>
+            <td>${b.book_title}</td>
+            <td>${b.quantity}</td>
+            <td>${borrowDate.toLocaleDateString('vi-VN')}</td>
+            <td>${returnDate.toLocaleDateString('vi-VN')}</td>
+            <td><span class="status ${status}">${statusText}</span></td>
+            <td><button class="btn-delete" onclick="deleteBorrow(${b.borrow_id})">🗑️ Xóa</button></td>
+          `;
+          tbody.appendChild(row);
+        });
+      }
+
+      function filterActiveBorrows() {
+        const search = document.getElementById("searchActive").value.toLowerCase();
+        const status = document.getElementById("filterStatusActive").value;
+        const now = new Date();
+
+        let filtered = allActiveBorrows.filter(b => {
+          const matchSearch = b.username.toLowerCase().includes(search) || 
+                            b.book_title.toLowerCase().includes(search);
+          
+          let matchStatus = true;
+          if (status === 'borrowing') {
+            matchStatus = new Date(b.return_date) >= now;
+          } else if (status === 'overdue') {
+            matchStatus = new Date(b.return_date) < now;
+          }
+          
+          return matchSearch && matchStatus;
+        });
+
+        displayActiveBorrows(filtered);
+      }
+
+      // Load lịch sử
+      async function loadHistory() {
+        document.getElementById("loading2").style.display = "block";
+        document.getElementById("historyTable").style.display = "none";
+
+        try {
+          const res = await fetch("/borrow-api/history", {
+            headers: { Authorization: "Bearer " + token },
+          });
+
+          if (!res.ok) throw new Error("Token hết hạn hoặc không hợp lệ");
+
+          allHistory = await res.json();
+          displayHistory(allHistory);
+          
+          document.getElementById("loading2").style.display = "none";
+          document.getElementById("historyTable").style.display = "table";
+        } catch (error) {
+          document.getElementById("loading2").style.display = "none";
+          alert(error.message);
+          window.location.href = "/auth/login";
+        }
+      }
+
+      function displayHistory(data) {
+        const tbody = document.querySelector("#historyTable tbody");
+        tbody.innerHTML = "";
+
+        if (data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: #999;">Chưa có lịch sử mượn trả</td></tr>';
+          return;
+        }
+
+        data.forEach((b) => {
+          const borrowDate = new Date(b.borrow_date);
+          const returnDate = new Date(b.return_date);
+          const now = new Date();
+          
+          let status = b.status || 'borrowing';
+          let statusText = 'Đang mượn';
+          
+          if (status === 'returned') {
+            statusText = 'Đã trả';
+          } else if (now > returnDate) {
+            status = 'overdue';
+            statusText = 'Quá hạn';
+          }
+
+          const actualReturnDate = b.actual_return_date 
+            ? new Date(b.actual_return_date).toLocaleDateString('vi-VN')
+            : '-';
+
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${b.borrow_id}</td>
+            <td>${b.username}</td>
+            <td>${b.book_title}</td>
+            <td>${b.quantity}</td>
+            <td>${borrowDate.toLocaleDateString('vi-VN')}</td>
+            <td>${returnDate.toLocaleDateString('vi-VN')}</td>
+            <td>${actualReturnDate}</td>
+            <td><span class="status ${status}">${statusText}</span></td>
+          `;
+          tbody.appendChild(row);
+        });
+      }
+
+      function filterHistory() {
+        const search = document.getElementById("searchHistory").value.toLowerCase();
+        const status = document.getElementById("filterStatusHistory").value;
+        const now = new Date();
+
+        let filtered = allHistory.filter(b => {
+          const matchSearch = b.username.toLowerCase().includes(search) || 
+                            b.book_title.toLowerCase().includes(search);
+          
+          let matchStatus = true;
+          if (status === 'returned') {
+            matchStatus = b.status === 'returned';
+          } else if (status === 'borrowing') {
+            matchStatus = b.status !== 'returned' && new Date(b.return_date) >= now;
+          } else if (status === 'overdue') {
+            matchStatus = b.status !== 'returned' && new Date(b.return_date) < now;
+          }
+          
+          return matchSearch && matchStatus;
+        });
+
+        displayHistory(filtered);
       }
 
       async function deleteBorrow(id) {
@@ -217,7 +561,7 @@
 
           if (res.ok) {
             alert("✅ Đã xóa phiếu mượn");
-            loadBorrows();
+            loadActiveBorrows();
           } else {
             const err = await res.json();
             alert("❌ Lỗi: " + err.error);
@@ -235,7 +579,7 @@
         window.location.href = "/auth/login";
       }
 
-      loadBorrows();
+      loadActiveBorrows();
     </script>
   </body>
 </html>

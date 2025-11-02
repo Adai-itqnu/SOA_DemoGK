@@ -2,65 +2,135 @@
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
-    <title>📚 Danh sách sách có thể mượn</title>
+    <title>📚 Quản lý mượn sách</title>
     <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
       body {
         font-family: "Segoe UI", sans-serif;
         background: linear-gradient(135deg, #e8f0ff, #f4f6f8);
-        text-align: center;
+        padding-bottom: 40px;
+      }
+      
+      /* Header */
+      header {
+        background: linear-gradient(135deg, #007bff, #00c3ff);
+        color: white;
+        padding: 20px 40px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      header h2 {
         margin: 0;
-        padding: 20px;
       }
-      h2 {
-        color: #333;
-        margin-bottom: 10px;
-      }
-      a.logout {
-        display: inline-block;
-        margin-bottom: 20px;
-        padding: 10px 15px;
+      .logout {
         background: #dc3545;
         color: white;
+        padding: 10px 20px;
+        border: none;
         border-radius: 8px;
+        cursor: pointer;
         text-decoration: none;
+        font-weight: bold;
       }
-      a.logout:hover {
+      .logout:hover {
         background: #b92b39;
       }
-      table {
-        width: 90%;
+
+      /* Tabs */
+      .tabs {
+        max-width: 1200px;
+        margin: 30px auto 0;
+        display: flex;
+        gap: 10px;
+        padding: 0 20px;
+      }
+      .tab {
+        padding: 12px 24px;
+        background: white;
+        border: none;
+        border-radius: 10px 10px 0 0;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 600;
+        color: #666;
+        transition: all 0.3s;
+      }
+      .tab.active {
+        background: white;
+        color: #007bff;
+        box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
+      }
+      .tab:hover {
+        color: #007bff;
+      }
+
+      /* Content */
+      .content {
+        max-width: 1200px;
         margin: 0 auto;
+        padding: 0 20px;
+      }
+      .tab-content {
+        display: none;
+        background: white;
+        padding: 30px;
+        border-radius: 0 10px 10px 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      }
+      .tab-content.active {
+        display: block;
+      }
+
+      /* Tables */
+      table {
+        width: 100%;
         border-collapse: collapse;
-        background: #fff;
-        border-radius: 10px;
-        overflow: hidden;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-top: 20px;
       }
       th {
         background: #007bff;
         color: white;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+        padding: 12px;
+        text-align: left;
       }
-      th,
       td {
         padding: 12px;
-        border-bottom: 1px solid #ddd;
+        border-bottom: 1px solid #eee;
       }
       tr:hover {
-        background: #f1f7ff;
+        background: #f8f9fa;
       }
+
+      /* Buttons */
       button {
         background: #007bff;
         border: none;
-        padding: 8px 12px;
+        padding: 8px 16px;
         color: white;
         border-radius: 6px;
         cursor: pointer;
+        font-weight: 600;
       }
       button:hover {
         background: #0056b3;
       }
+      button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+      .btn-return {
+        background: #28a745;
+      }
+      .btn-return:hover {
+        background: #218838;
+      }
+
       /* Modal */
       .modal {
         display: none;
@@ -69,44 +139,56 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.4);
+        background: rgba(0, 0, 0, 0.5);
         justify-content: center;
         align-items: center;
+        z-index: 1000;
       }
       .modal-content {
-        background: #fff;
-        padding: 20px;
-        border-radius: 10px;
-        width: 300px;
-        text-align: left;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        width: 400px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.2);
       }
       .modal-content h3 {
-        text-align: center;
+        margin-bottom: 20px;
+        color: #333;
+      }
+      .modal-content label {
+        display: block;
+        margin-top: 12px;
+        color: #666;
+        font-weight: 600;
       }
       .modal-content input,
       .modal-content select {
         width: 100%;
-        margin: 8px 0;
-        padding: 8px;
-        border: 1px solid #ccc;
+        padding: 10px;
+        margin-top: 5px;
+        border: 1px solid #ddd;
         border-radius: 6px;
+        font-size: 14px;
+      }
+      .modal-buttons {
+        margin-top: 20px;
+        display: flex;
+        gap: 10px;
       }
       .close {
         float: right;
-        font-size: 20px;
+        font-size: 24px;
         cursor: pointer;
-        color: #aaa;
+        color: #999;
       }
       .close:hover {
-        color: #000;
+        color: #333;
       }
 
-      /* Loading spinner */
+      /* Loading */
       .loading {
         text-align: center;
         padding: 40px;
-        font-size: 18px;
         color: #007bff;
       }
       .spinner {
@@ -119,51 +201,100 @@
         margin: 20px auto;
       }
       @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      /* Status badges */
+      .status {
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .status.borrowing {
+        background: #fff3cd;
+        color: #856404;
+      }
+      .status.overdue {
+        background: #f8d7da;
+        color: #721c24;
+      }
+      .status.returned {
+        background: #d4edda;
+        color: #155724;
       }
     </style>
   </head>
   <body>
-    <h2>📖 Xin chào, <span id="username"></span>!</h2>
-    <p>Danh sách các sách hiện có thể mượn</p>
-    <a class="logout" href="#" onclick="logout()">🚪 Đăng xuất</a>
+    <header>
+      <h2>📖 Xin chào, <span id="username"></span>!</h2>
+      <a class="logout" href="#" onclick="logout()">🚪 Đăng xuất</a>
+    </header>
 
-    <!-- Loading indicator -->
-    <div id="loading" class="loading" style="display: none">
-      <div class="spinner"></div>
-      <p>Đang tải dữ liệu...</p>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab(0)">📚 Sách có thể mượn</button>
+      <button class="tab" onclick="switchTab(1)">📋 Sách đang mượn</button>
     </div>
 
-    <table id="bookTable" style="display: none">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Tiêu đề</th>
-          <th>Tác giả</th>
-          <th>Thể loại</th>
-          <th>Số lượng</th>
-          <th>Mượn</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Sẽ được load bằng JavaScript -->
-      </tbody>
-    </table>
+    <div class="content">
+      <!-- Tab 1: Danh sách sách -->
+      <div class="tab-content active">
+        <h3>📚 Danh sách sách có thể mượn</h3>
+        <div id="loading1" class="loading" style="display: none">
+          <div class="spinner"></div>
+          <p>Đang tải dữ liệu...</p>
+        </div>
+        <table id="bookTable" style="display: none">
+          <thead>
+            <tr>
+              <th style="width: 60px">ID</th>
+              <th>Tiêu đề</th>
+              <th>Tác giả</th>
+              <th>Thể loại</th>
+              <th style="width: 100px">Số lượng</th>
+              <th style="width: 120px">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
 
-    <!-- Modal -->
+      <!-- Tab 2: Sách đang mượn -->
+      <div class="tab-content">
+        <h3>📋 Sách bạn đang mượn</h3>
+        <div id="loading2" class="loading" style="display: none">
+          <div class="spinner"></div>
+          <p>Đang tải dữ liệu...</p>
+        </div>
+        <table id="myBorrowsTable" style="display: none">
+          <thead>
+            <tr>
+              <th style="width: 60px">ID</th>
+              <th>Tên sách</th>
+              <th style="width: 100px">Số lượng</th>
+              <th style="width: 140px">Ngày mượn</th>
+              <th style="width: 140px">Ngày trả dự kiến</th>
+              <th style="width: 100px">Trạng thái</th>
+              <th style="width: 120px">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Modal mượn sách -->
     <div id="borrowModal" class="modal">
       <div class="modal-content">
         <span class="close" onclick="closeModal()">&times;</span>
         <h3>📖 Mượn sách</h3>
-        <p id="bookTitle"></p>
+        <p id="bookTitle" style="font-weight: 600; color: #007bff"></p>
         <input type="hidden" id="bookId" />
+        
         <label>Số lượng:</label>
-        <input type="number" id="quantity" min="1" />
+        <input type="number" id="quantity" min="1" value="1" />
+        
         <label>Số ngày mượn:</label>
         <select id="days">
           <option value="1">1 ngày</option>
@@ -171,8 +302,14 @@
           <option value="3">3 ngày</option>
           <option value="5">5 ngày</option>
           <option value="7">7 ngày</option>
+          <option value="14">14 ngày</option>
+          <option value="30">30 ngày</option>
         </select>
-        <button onclick="borrowBook()">✅ Xác nhận mượn</button>
+        
+        <div class="modal-buttons">
+          <button onclick="borrowBook()" style="flex: 1">✅ Xác nhận mượn</button>
+          <button onclick="closeModal()" style="flex: 1; background: #6c757d">❌ Hủy</button>
+        </div>
       </div>
     </div>
 
@@ -185,9 +322,29 @@
       let currentBookId = null;
       let maxQuantity = 0;
 
+      // Switch tabs
+      function switchTab(index) {
+        const tabs = document.querySelectorAll(".tab");
+        const contents = document.querySelectorAll(".tab-content");
+        
+        tabs.forEach((tab, i) => {
+          if (i === index) {
+            tab.classList.add("active");
+            contents[i].classList.add("active");
+          } else {
+            tab.classList.remove("active");
+            contents[i].classList.remove("active");
+          }
+        });
+
+        // Load data khi chuyển tab
+        if (index === 0) loadBooks();
+        if (index === 1) loadMyBorrows();
+      }
+
+      // Load danh sách sách
       async function loadBooks() {
-        // Show loading
-        document.getElementById("loading").style.display = "block";
+        document.getElementById("loading1").style.display = "block";
         document.getElementById("bookTable").style.display = "none";
 
         try {
@@ -195,9 +352,7 @@
             headers: { Authorization: "Bearer " + token },
           });
 
-          if (!res.ok) {
-            throw new Error("Token hết hạn hoặc không hợp lệ");
-          }
+          if (!res.ok) throw new Error("Token hết hạn hoặc không hợp lệ");
 
           const books = await res.json();
           const tbody = document.querySelector("#bookTable tbody");
@@ -211,21 +366,88 @@
               <td>${b.author}</td>
               <td>${b.category}</td>
               <td>${b.quantity}</td>
-              <td><button onclick="openModal('${b.id}','${b.title}','${b.quantity}')">📘 Mượn</button></td>
+              <td>
+                <button onclick="openModal(${b.id},'${b.title}',${b.quantity})" ${b.quantity === 0 ? 'disabled' : ''}>
+                  📘 Mượn
+                </button>
+              </td>
             `;
             tbody.appendChild(row);
           });
 
-          // Hide loading and show table
-          document.getElementById("loading").style.display = "none";
+          document.getElementById("loading1").style.display = "none";
           document.getElementById("bookTable").style.display = "table";
         } catch (error) {
-          document.getElementById("loading").style.display = "none";
+          document.getElementById("loading1").style.display = "none";
           alert(error.message);
           window.location.href = "/auth/login";
         }
       }
 
+      // Load sách đang mượn
+      async function loadMyBorrows() {
+        document.getElementById("loading2").style.display = "block";
+        document.getElementById("myBorrowsTable").style.display = "none";
+
+        try {
+          const res = await fetch("/borrow-api/my-borrows", {
+            headers: { Authorization: "Bearer " + token },
+          });
+
+          if (!res.ok) throw new Error("Token hết hạn hoặc không hợp lệ");
+
+          const borrows = await res.json();
+          const tbody = document.querySelector("#myBorrowsTable tbody");
+          tbody.innerHTML = "";
+
+          if (borrows.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #999;">Bạn chưa mượn sách nào</td></tr>';
+          } else {
+            borrows.forEach((b) => {
+              const borrowDate = new Date(b.borrow_date);
+              const returnDate = new Date(b.return_date);
+              const now = new Date();
+              
+              let status = 'borrowing';
+              let statusText = 'Đang mượn';
+              
+              if (now > returnDate && b.status !== 'returned') {
+                status = 'overdue';
+                statusText = 'Quá hạn';
+              }
+              if (b.status === 'returned') {
+                status = 'returned';
+                statusText = 'Đã trả';
+              }
+
+              const row = document.createElement("tr");
+              row.innerHTML = `
+                <td>${b.borrow_id}</td>
+                <td>${b.book_title}</td>
+                <td>${b.quantity}</td>
+                <td>${borrowDate.toLocaleDateString('vi-VN')}</td>
+                <td>${returnDate.toLocaleDateString('vi-VN')}</td>
+                <td><span class="status ${status}">${statusText}</span></td>
+                <td>
+                  ${b.status !== 'returned' ? 
+                    `<button class="btn-return" onclick="returnBook(${b.borrow_id})">📤 Trả sách</button>` : 
+                    '<span style="color: #999">-</span>'}
+                </td>
+              `;
+              tbody.appendChild(row);
+            });
+          }
+
+          document.getElementById("loading2").style.display = "none";
+          document.getElementById("myBorrowsTable").style.display = "table";
+        } catch (error) {
+          document.getElementById("loading2").style.display = "none";
+          alert(error.message);
+          window.location.href = "/auth/login";
+        }
+      }
+
+      // Modal mượn sách
       function openModal(id, title, availableQty) {
         currentBookId = id;
         maxQuantity = availableQty;
@@ -239,6 +461,7 @@
         modal.style.display = "none";
       }
 
+      // Mượn sách
       async function borrowBook() {
         const quantity = parseInt(document.getElementById("quantity").value);
         const days = parseInt(document.getElementById("days").value);
@@ -280,6 +503,37 @@
         }
       }
 
+      // Trả sách
+      async function returnBook(borrowId) {
+        if (!confirm("Bạn có chắc muốn trả sách này?")) return;
+
+        const btn = event.target;
+        const originalText = btn.textContent;
+        btn.textContent = "⏳ Đang trả...";
+        btn.disabled = true;
+
+        try {
+          const res = await fetch(`/borrow-api/return/${borrowId}`, {
+            method: "POST",
+            headers: { Authorization: "Bearer " + token },
+          });
+
+          if (res.ok) {
+            alert("✅ Trả sách thành công!");
+            loadMyBorrows();
+            loadBooks(); // Reload để cập nhật số lượng
+          } else {
+            const err = await res.json();
+            alert("❌ Lỗi: " + err.error);
+          }
+        } catch (error) {
+          alert("❌ Lỗi: " + error.message);
+        } finally {
+          btn.textContent = originalText;
+          btn.disabled = false;
+        }
+      }
+
       function logout() {
         localStorage.clear();
         window.location.href = "/auth/login";
@@ -289,6 +543,7 @@
         if (event.target === modal) closeModal();
       };
 
+      // Load dữ liệu ban đầu
       loadBooks();
     </script>
   </body>
