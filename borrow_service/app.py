@@ -1,4 +1,3 @@
-# borrow_service/app.py
 from flask import Flask, render_template, request, jsonify
 from pymongo import MongoClient
 from service_registry import register_service
@@ -13,6 +12,7 @@ client = MongoClient(MONGO_URI)
 db = client["borrow_db"]
 borrows = db["borrows"]
 
+# Tìm địa chỉ Auth Service từ Consul (thử nhiều lần nếu chưa sẵn sàng)
 def get_auth_service_url(retries=5, delay=2):
     c = consul.Consul(host=CONSUL_HOST, port=CONSUL_PORT)
     for attempt in range(retries):
@@ -23,6 +23,7 @@ def get_auth_service_url(retries=5, delay=2):
         time.sleep(delay)
     return os.environ.get("AUTH_FALLBACK_URL", "http://127.0.0.1:5000")
 
+# Gọi Auth Service để xác thực token
 def verify_token_with_auth(token):
     auth_url = get_auth_service_url()
     headers = {"Authorization": f"Bearer {token}"}
@@ -35,26 +36,31 @@ def verify_token_with_auth(token):
     except requests.exceptions.RequestException as e:
         return {"valid": False, "error": str(e)}
 
+# Lấy token từ header Authorization
 def get_token_from_request():
     auth_header = request.headers.get("Authorization", "")
     if auth_header.startswith("Bearer "):
         return auth_header.split(" ", 1)[1]
     return auth_header.strip()
 
+# Kiểm tra service có hoạt động không
 @app.route("/health")
 def health():
     return jsonify({"status": "UP"}), 200
 
+# Hiển thị trang mượn sách cho user
 @app.route("/")
 @app.route("/borrow")
 @app.route("/borrow/")
 def borrow_page():
     return render_template("borrow_user.html")
 
+# Hiển thị trang quản lý mượn trả cho admin
 @app.route("/borrow-admin")
 def borrow_admin_page():
     return render_template("borrow_admin.html")
 
+# Lấy danh sách phiếu mượn (admin: tất cả, user: của mình)
 @app.route("/borrow-api/list", methods=["GET"])
 def list_borrows():
     token = get_token_from_request()
@@ -72,7 +78,7 @@ def list_borrows():
         data = list(borrows.find({"username": username}, {"_id": 0}))
     return jsonify(data), 200
 
-# API mới: Lấy sách đang mượn của user
+# Lấy sách đang mượn của user (chưa trả)
 @app.route("/borrow-api/my-borrows", methods=["GET"])
 def my_borrows():
     token = get_token_from_request()
@@ -89,7 +95,7 @@ def my_borrows():
     
     return jsonify(data), 200
 
-# API mới: Lấy lịch sử mượn trả (cho admin)
+# Lấy lịch sử mượn trả (chỉ admin)
 @app.route("/borrow-api/history", methods=["GET"])
 def borrow_history():
     token = get_token_from_request()
@@ -101,7 +107,8 @@ def borrow_history():
     data = list(borrows.find({}, {"_id": 0}).sort("borrow_date", -1))
     return jsonify(data), 200
 
-@app.route("/borrow-api/borrow", methods=["POST"])
+# Tạo phiếu mượn sách mới (trừ số lượng trong kho)
+@app.route("/borrow-api/borrow", methods=["POST"]) 
 def borrow_book():
     token = get_token_from_request()
     verify = verify_token_with_auth(token)
@@ -149,7 +156,7 @@ def borrow_book():
     borrows.insert_one(new_borrow)
     return jsonify({"message": "Mượn sách thành công!"}), 201
 
-# API mới: User tự trả sách
+# User tự trả sách (cộng lại số lượng vào kho)
 @app.route("/borrow-api/return/<int:borrow_id>", methods=["POST"])
 def return_book(borrow_id):
     token = get_token_from_request()
@@ -191,6 +198,7 @@ def return_book(borrow_id):
     
     return jsonify({"message": "Trả sách thành công!"}), 200
 
+# Xóa phiếu mượn (chỉ admin, hoàn lại số lượng nếu chưa trả)
 @app.route("/borrow-api/<int:borrow_id>", methods=["DELETE"])
 def delete_borrow(borrow_id):
     token = get_token_from_request()
@@ -215,7 +223,7 @@ def delete_borrow(borrow_id):
     borrows.delete_one({"borrow_id": borrow_id})
     return jsonify({"message": "Đã xóa phiếu mượn"}), 200
 
-
+# Khởi chạy ứng dụng
 if __name__ == "__main__":
     register_service()
     app.run(port=SERVICE_PORT, debug=True)

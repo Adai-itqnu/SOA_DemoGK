@@ -1,4 +1,3 @@
-# book_service/app.py
 from flask import Flask, jsonify, request, render_template
 from service_registry import register_service
 from config import *
@@ -8,10 +7,12 @@ import requests, consul, os, time
 app = Flask(__name__)
 app.secret_key = "book_secret"
 
+# Kiểm tra service có hoạt động không
 @app.route("/health")
 def health():
     return jsonify({"status": "UP"}), 200
 
+# Tìm địa chỉ Auth Service từ Consul (thử nhiều lần nếu chưa sẵn sàng)
 def get_auth_service_url(retries=5, delay=2):
     c = consul.Consul(host=CONSUL_HOST, port=CONSUL_PORT)
     for attempt in range(retries):
@@ -22,6 +23,7 @@ def get_auth_service_url(retries=5, delay=2):
         time.sleep(delay)
     return os.environ.get("AUTH_FALLBACK_URL", "http://127.0.0.1:5000")
 
+# Gọi Auth Service để xác thực token
 def verify_token_with_auth(token):
     auth_url = get_auth_service_url()
     headers = {"Authorization": f"Bearer {token}"}
@@ -33,28 +35,31 @@ def verify_token_with_auth(token):
         pass
     return {"valid": False, "error": "Không thể xác thực token"}
 
+# Lấy token từ header Authorization
 def get_token_from_request():
     auth_header = request.headers.get("Authorization", "")
     if auth_header.startswith("Bearer "):
         return auth_header.split(" ", 1)[1]
     return auth_header.strip()
 
-# HTML shells (accept both /book and /book/)
+# Hiển thị trang quản lý sách cho admin
 @app.route("/")
 @app.route("/book")
 @app.route("/book/")
 def book_page():
     return render_template("books_admin.html")
 
+# Hiển thị trang xem sách cho user
 @app.route("/book-user")
 def book_user_page():
     return render_template("books_user.html")
 
-# Internal endpoints used by other services
+# API lấy danh sách sách (dùng nội bộ, không cần token)
 @app.route("/books", methods=["GET"])
 def get_books_api_internal():
     return jsonify(get_all_books()), 200
 
+# Giảm số lượng sách (dùng khi mượn sách)
 @app.route("/books/<int:bid>/decrease", methods=["POST"])
 def decrease_book_quantity(bid):
     try:
@@ -71,7 +76,7 @@ def decrease_book_quantity(bid):
     except Exception as e:
         return jsonify({"error": f"Lỗi server: {str(e)}"}), 500
 
-# Admin/user API with JWT
+# Lấy danh sách sách (yêu cầu token hợp lệ)
 @app.route("/book-api/books", methods=["GET"])
 def list_books():
     token = get_token_from_request()
@@ -80,6 +85,7 @@ def list_books():
         return jsonify({"error": "Token không hợp lệ"}), 401
     return jsonify(get_all_books()), 200
 
+# Thêm sách mới (chỉ admin)
 @app.route("/book-api/books", methods=["POST"])
 def add_book_api():
     token = get_token_from_request()
@@ -92,6 +98,7 @@ def add_book_api():
     create_book(data)
     return jsonify({"message": "Thêm sách thành công"}), 201
 
+# Cập nhật thông tin sách (chỉ admin)
 @app.route("/book-api/books/<int:bid>", methods=["PUT"])
 def update_book_api(bid):
     token = get_token_from_request()
@@ -105,6 +112,7 @@ def update_book_api(bid):
         return jsonify({"message": "Cập nhật sách thành công"}), 200
     return jsonify({"error": "Không tìm thấy sách"}), 404
 
+# Xóa sách (chỉ admin)
 @app.route("/book-api/books/<int:bid>", methods=["DELETE"])
 def delete_book_api(bid):
     token = get_token_from_request()
@@ -117,6 +125,7 @@ def delete_book_api(bid):
         return jsonify({"message": "Đã xóa sách thành công"}), 200
     return jsonify({"error": "Không tìm thấy sách"}), 404
 
+# Khởi chạy ứng dụng
 if __name__ == "__main__":
     register_service()
     app.run(port=SERVICE_PORT, debug=True)

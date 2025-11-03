@@ -8,22 +8,22 @@ db = client["borrow_db"]
 borrows = db["borrows"]
 books = db["books"]  # liên kết với dữ liệu sách
 
-
+# Lấy toàn bộ phiếu mượn
 def get_all_borrows():
     """Lấy toàn bộ phiếu mượn"""
     return list(borrows.find({}, {"_id": 0}))
 
-
+# Lấy phiếu mượn đang hoạt động (chưa trả)
 def get_active_borrows():
     """Lấy phiếu mượn đang hoạt động (chưa trả)"""
     return list(borrows.find({"status": {"$ne": "returned"}}, {"_id": 0}))
 
-
+# Lấy toàn bộ lịch sử mượn trả
 def get_borrow_history():
     """Lấy toàn bộ lịch sử mượn trả"""
     return list(borrows.find({}, {"_id": 0}).sort("borrow_date", -1))
 
-
+# Lấy phiếu mượn của user (chưa trả)
 def get_user_borrows(username):
     """Lấy phiếu mượn của user (chưa trả)"""
     return list(borrows.find({
@@ -31,12 +31,12 @@ def get_user_borrows(username):
         "status": {"$ne": "returned"}
     }, {"_id": 0}).sort("borrow_date", -1))
 
-
+# Tìm phiếu mượn theo ID
 def get_borrow_by_id(borrow_id):
     """Tìm phiếu mượn theo ID"""
     return borrows.find_one({"borrow_id": int(borrow_id)}, {"_id": 0})
 
-
+# Tạo phiếu mượn mới và trừ số lượng sách trong kho
 def create_borrow(data):
     """Thêm phiếu mượn mới và trừ số lượng trong kho"""
     now = datetime.utcnow()
@@ -65,7 +65,7 @@ def create_borrow(data):
     borrows.insert_one(borrow)
     return {"message": "Mượn thành công!", "borrow": borrow}
 
-
+# Trả sách và cộng lại số lượng vào kho
 def return_borrow(borrow_id):
     """Trả sách và cập nhật trạng thái"""
     borrow = borrows.find_one({"borrow_id": int(borrow_id)})
@@ -89,13 +89,13 @@ def return_borrow(borrow_id):
     
     return {"message": "Trả sách thành công!"}
 
-
+# Cập nhật thông tin phiếu mượn
 def update_borrow(borrow_id, data):
     """Cập nhật thông tin phiếu mượn"""
     result = borrows.update_one({"borrow_id": int(borrow_id)}, {"$set": data})
     return result.modified_count > 0
 
-
+# Xóa phiếu mượn và hoàn lại số lượng sách (nếu chưa trả)
 def delete_borrow(borrow_id):
     """Xóa phiếu mượn và trả lại số lượng sách (nếu chưa trả)"""
     borrow = borrows.find_one({"borrow_id": int(borrow_id)})

@@ -1,4 +1,3 @@
-# auth_service/app.py
 from flask import Flask, render_template, request, jsonify
 from flask_jwt_extended import (
     JWTManager, create_access_token,
@@ -11,17 +10,19 @@ from config import *
 
 app = Flask(__name__)
 
-# JWT setup
+# Cấu hình JWT để xác thực người dùng
 app.config["JWT_SECRET_KEY"] = JWT_SECRET
 app.config["JWT_TOKEN_LOCATION"] = ["headers"]
 app.config["JWT_HEADER_NAME"] = "Authorization"
 app.config["JWT_HEADER_TYPE"] = "Bearer"
 jwt_manager = JWTManager(app)
 
+# Kiểm tra service có hoạt động không
 @app.route("/health")
 def health():
     return jsonify({"status": "UP"}), 200
 
+# Xử lý đăng ký tài khoản mới
 @app.route("/auth/register", methods=["GET", "POST"])
 def register_page():
     if request.method == "GET":
@@ -50,6 +51,7 @@ def register_page():
     })
     return render_template("login.html", msg="Đăng ký thành công, hãy đăng nhập!")
 
+# Xử lý đăng nhập và tạo JWT token
 @app.route("/auth/login", methods=["GET", "POST"])
 def login_page():
     if request.method == "GET":
@@ -76,10 +78,12 @@ def login_page():
         "role": identity["role"]
     }), 200
 
+# Hiển thị trang dashboard admin
 @app.route("/admin")
 def admin_dashboard():
     return render_template("admin_dashboard.html")
 
+# API dành riêng cho admin (yêu cầu role admin)
 @app.route("/admin-api")
 @jwt_required()
 def admin_api():
@@ -94,7 +98,7 @@ def admin_api():
         "message": "Welcome to Admin API"
     }), 200
 
-# FIX: return JSON for auth_request and services
+# Xác thực token có hợp lệ không
 @app.route("/auth/verify", methods=["GET", "POST"])
 def verify_token():
     try:
@@ -105,14 +109,17 @@ def verify_token():
     except Exception:
         return jsonify({"valid": False}), 401
 
+# Xử lý đăng xuất
 @app.route("/auth/logout")
 def logout():
     return ("", 204)
 
+# Trang chủ chuyển đến login
 @app.route("/")
 def home():
     return render_template("login.html")
 
+# Khởi chạy ứng dụng
 if __name__ == "__main__":
     register_service()
     app.run(port=SERVICE_PORT, debug=True)
