@@ -1,0 +1,57 @@
+upstream auth_service_upstream {
+  {{ range service "auth-service" }}
+  server {{ .Address }}:{{ .Port }};
+  {{ else }}
+  server auth_service:5000;
+  {{ end }}
+}
+
+upstream user_service_upstream {
+  {{ range service "user-service" }}
+  server {{ .Address }}:{{ .Port }};
+  {{ else }}
+  server user_service:5001;
+  {{ end }}
+}
+
+upstream book_service_upstream {
+  {{ range service "book-service" }}
+  server {{ .Address }}:{{ .Port }};
+  {{ else }}
+  server book_service:5002;
+  {{ end }}
+}
+
+upstream borrow_service_upstream {
+  {{ range service "borrow-service" }}
+  server {{ .Address }}:{{ .Port }};
+  {{ else }}
+  server borrow_service:5003;
+  {{ end }}
+}
+
+server {
+  listen 80;
+
+  location /auth/ {
+    proxy_pass http://auth_service_upstream;
+  }
+
+  location /user-api/ {
+    proxy_pass http://user_service_upstream;
+  }
+
+  location /book-api/ {
+    proxy_pass http://book_service_upstream;
+  }
+
+  location /borrow-api/ {
+    proxy_pass http://borrow_service_upstream;
+  }
+
+  location / {
+    return 404;
+  }
+}
+
+

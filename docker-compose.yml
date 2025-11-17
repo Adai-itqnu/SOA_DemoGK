@@ -1,0 +1,106 @@
+version: "3.8"
+
+services:
+  consul:
+    image: hashicorp/consul:1.18
+    container_name: consul
+    command: agent -dev -client=0.0.0.0
+    ports:
+      - "8500:8500"
+    networks:
+      - app-net
+
+  auth_service:
+    build: ./auth_service
+    container_name: auth_service
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/user_db
+      - SERVICE_NAME=auth-service
+      - SERVICE_PORT=5000
+      - CONSUL_HOST=consul
+      - CONSUL_PORT=8500
+      - JWT_SECRET=mysecretkey
+    depends_on:
+      - consul
+      - mongo
+    networks:
+      - app-net
+
+  user_service:
+    build: ./user_service
+    container_name: user_service
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/user_db
+      - SERVICE_NAME=user-service
+      - SERVICE_PORT=5001
+      - CONSUL_HOST=consul
+      - CONSUL_PORT=8500
+      - JWT_SECRET=mysecretkey
+      - AUTH_SERVICE_NAME=auth-service
+    depends_on:
+      - consul
+      - mongo
+    networks:
+      - app-net
+
+  book_service:
+    build: ./book_service
+    container_name: book_service
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/book_db
+      - SERVICE_NAME=book-service
+      - SERVICE_PORT=5002
+      - CONSUL_HOST=consul
+      - CONSUL_PORT=8500
+      - AUTH_SERVICE_NAME=auth-service
+    depends_on:
+      - consul
+      - mongo
+    networks:
+      - app-net
+
+  borrow_service:
+    build: ./borrow_service
+    container_name: borrow_service
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/borrow_db
+      - SERVICE_NAME=borrow-service
+      - SERVICE_PORT=5003
+      - CONSUL_HOST=consul
+      - CONSUL_PORT=8500
+      - AUTH_SERVICE_NAME=auth-service
+      - BOOK_SERVICE_NAME=book-service
+      - USER_SERVICE_NAME=user-service
+    depends_on:
+      - consul
+      - mongo
+    networks:
+      - app-net
+
+  mongo:
+    image: mongo:6
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    networks:
+      - app-net
+
+  nginx:
+    build: ./nginx
+    container_name: api-gateway
+    ports:
+      - "80:80"
+    depends_on:
+      - consul
+      - auth_service
+      - user_service
+      - book_service
+      - borrow_service
+    networks:
+      - app-net
+
+networks:
+  app-net:
+    driver: bridge
+
+

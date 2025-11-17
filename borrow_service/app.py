@@ -122,7 +122,8 @@ def borrow_book():
     days = int(data.get("days", 1))
 
     try:
-        book_info = requests.get("http://127.0.0.1:5002/books").json()
+        # Gọi Book Service nội bộ trong cùng mạng Docker
+        book_info = requests.get("http://book_service:5002/books").json()
         book = next((b for b in book_info if b["id"] == book_id), None)
         if not book:
             return jsonify({"error": "Không tìm thấy sách này!"}), 404
@@ -133,7 +134,7 @@ def borrow_book():
 
     try:
         res = requests.post(
-            f"http://127.0.0.1:5002/books/{book_id}/decrease",
+            f"http://book_service:5002/books/{book_id}/decrease",
             json={"quantity": quantity},
             timeout=5
         )
@@ -180,7 +181,7 @@ def return_book(borrow_id):
     # Trả sách: cộng lại số lượng vào kho
     try:
         requests.post(
-            f"http://127.0.0.1:5002/books/{borrow['book_id']}/decrease",
+            f"http://book_service:5002/books/{borrow['book_id']}/decrease",
             json={"quantity": -borrow["quantity"]},
             timeout=5
         )
@@ -214,7 +215,7 @@ def delete_borrow(borrow_id):
     if borrow.get("status") != "returned":
         try:
             requests.post(
-                f"http://127.0.0.1:5002/books/{borrow['book_id']}/decrease",
+                f"http://book_service:5002/books/{borrow['book_id']}/decrease",
                 json={"quantity": -borrow["quantity"]}
             )
         except:
